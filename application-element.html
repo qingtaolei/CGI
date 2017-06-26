@@ -1,0 +1,278 @@
+<script src="bower_components/stevia-elements/src/manager/stevia-manager.js"></script>
+
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<script src="bower_components/cookies-js/dist/cookies.min.js"></script>
+<script src="bower_components/crypto-js/core.js"></script>
+<script src="bower_components/crypto-js/sha1.js"></script>
+
+<link rel="import" href="bower_components/stevia-elements/src/stv-header.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-application-behavior.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-footer.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-select.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-select-box.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-panel.html">
+<link rel="import" href="bower_components/stevia-elements/src/dropdown/stv-dropdown.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-feedback.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-launcher/stv-launcher.html">
+
+<link rel="import" href="bower_components/stevia-elements/src/table/stv-table.html">
+<link rel="import" href="bower_components/stevia-elements/src/form/stv-file-origin.html">
+<link rel="import" href="bower_components/stevia-elements/src/file/stv-file-browser.html">
+<link rel="import" href="bower_components/stevia-elements/src/job/stv-job-browser.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-cluster-status.html">
+<link rel="import" href="bower_components/stevia-elements/src/report/stv-report.html">
+
+
+<link rel="import" href="src/application-home.html">
+<link rel="import" href="src/application-form.html">
+
+<dom-module id="application-element">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+         :host {
+            display: block;
+            position: relative;
+            cursor: default;
+            font-size: 13px;
+            background-color: var(--default-primary-color);
+            height: 100%;
+            width: 100%;
+        }
+
+        stv-header {
+            position: absolute;
+            top: 0;
+        }
+
+        stv-footer {
+            position: absolute;
+            bottom: 0;
+        }
+
+        .content {
+            position: absolute;
+            width: 100%;
+            top: 60px;
+            /*height: calc(100vh - 60px);*/
+            /*background-color: transparent;*/
+        }
+
+        #fileBrowserPanel {
+            position: absolute;
+            top: 0px;
+            left: 0;
+            width: 600px;
+            height: 400px;
+            min-width: 600px;
+            min-height: 400px;
+        }
+
+        #jobBrowserPanel {
+            position: absolute;
+            top: 0px;
+            right: 0;
+            width: 600px;
+            height: 400px;
+            min-width: 600px;
+            min-height: 400px;
+        }
+
+        #fileBrowser {}
+
+        #jobBrowser {}
+
+        @media (max-width: 1100px) {
+            .option-text {
+                display: none;
+            }
+        }
+
+        .userid {
+            color: var(--accent-color);
+            font-size: 16px;
+        }
+
+        #description {
+            color: var(--accent-color);
+            font-weight: normal;
+        }
+
+        application-home {
+            height: calc(100vh - 160px);
+            overflow-y: auto;
+        }
+
+        application-form,
+        stv-report {
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+    </style>
+    <template>
+
+        <div class="content" menu-option="home">
+            <application-home id="home" on-start="handleHomeStart" isLogged="{{isLogged}}"></application-home>
+        </div>
+        <div class="content" menu-option="form">
+            <application-form id="home"></application-form>
+        </div>
+        <div id="jobContent" class="content" menu-option="job">
+            <stv-report id="report"></stv-report>
+        </div>
+        <div class="content" menu-option="home,form,job">
+            <stv-panel id="fileBrowserPanel" hidden collapsible movable closable expandible resizable on-hidden="handlePanelHidden">
+                <div class="header">
+                    <i class="fa fa-cloud"></i>&nbsp; Browse my data
+                </div>
+                <stv-file-browser id="fileBrowser" class="container flex" on-fileselect="handleFileSelect" bioformats="{{bioformats}}" on-need-refresh="handleUserNeedRefresh" user-data="{{userData}}">
+                </stv-file-browser>
+            </stv-panel>
+            <stv-panel id="jobBrowserPanel" hidden collapsible movable closable resizable on-hidden="handlePanelHidden">
+                <div class="header">
+                    <i class="fa fa-flask"></i>&nbsp; Browse my jobs
+                </div>
+                <stv-job-browser id="jobBrowser" class="container flex" on-jobselect="handleJobSelect" allowed-tools="{{allowedTools}}" on-need-refresh="handleUserNeedRefresh" user-data="{{userData}}" disable-relaunch="{{disableRelaunch}}" hide-status-filter="{{hideStatusFilter}}" hide-tool-filter="{{hideToolFilter}}">
+                </stv-job-browser>
+            </stv-panel>
+            <stv-feedback id="feedback" hidden on-feedbackend="handleFeedback"></stv-feedback>
+        </div>
+
+
+        <stv-header id="stvHeader" hide-jobs hide-browse selected-option="{{selectedOption}}" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout">
+            <div class="icon">
+                <img src="images/Leaf_icon_03.svg" style="height: 54px;margin: 8px 3px 0 0;">
+            </div>
+            <div class="title horizontal layout center" style="margin-left:15px;">
+                Stevia &nbsp;
+                <span style="font-weight:normal;">Scaffold</span>
+            </div>
+            <span id="description" class="description">
+                Description
+            </span>
+
+            <div id="menu" class="menu horizontal layout center flex">
+                <!-- <div class="flex"></div> -->
+                <div style="margin-left:4vw;"></div>
+                <div title="" class="option" on-click="handleMenuOption" data-option="home">
+                    <i class="fa fa-magic"></i>
+                    <span class="option-text">Home</span>
+                </div>
+                <div title="" class="option" on-click="handleLoggedOnlyMenuOption" data-option="form">
+                    <i class="fa fa-rocket"></i>
+                    <span class="option-text">Form</span>
+                </div>
+                <div class="flex" style="margin-left:2vw;"></div>
+                <div title="Browse my data" class="option" on-click="handleLoggedOnlyMenuPanel" data-panel="fileBrowserPanel">
+                    <i class="fa fa-cloud"></i>
+                    <span class="option-text">My data</span>
+                </div>
+                <div title="Browse my jobs" class="option" on-click="handleLoggedOnlyMenuPanel" data-panel="jobBrowserPanel">
+                    <i class="fa fa-flask"></i>
+                    <span class="option-text">My jobs</span>
+                </div>
+                <div style="margin-left:2vw;"></div>
+            </div>
+
+            <!-- <stv-launcher class="launcher" dropdown-position="left" data-src="conf/test-apps.json">
+                <i class="fa fa-th"></i>
+            </stv-launcher> -->
+
+            <stv-cluster-status id="clusterStatus" type="dark" class="cluster-status"></stv-cluster-status>
+
+            <stv-dropdown dark class="helpmenu">
+                <div data-button><i class="fa fa-question-circle"></i></div>
+                <ul data-menu>
+                    <a href="" target="_blank">
+                        <li>
+                            <i class="fa fa-book"></i> &nbsp; Documentation
+                        </li>
+                    </a>
+                    <li on-mousedown="handleExample">
+                        <i class="fa fa-lightbulb-o"></i> &nbsp; Run example
+                    </li>
+                    <li on-mousedown="handleFeedback">
+                        <i class="fa fa-envelope-o" aria-hidden="true"></i> &nbsp; Send an email
+                    </li>
+                    <a href="http://gitlab.bioinfo.cipf.es/stevia/stevia-elements/issues" target="_blank">
+                        <li>
+                            <i class="fa fa-exclamation-circle" aria-hidden="true"></i> &nbsp; Go to git issue
+                        </li>
+                    </a>
+                </ul>
+            </stv-dropdown>
+        </stv-header>
+
+        <stv-footer menu-option="home,login,signup,profile,remember">
+            Application Scaffold
+            <br> Created by
+            <span style="font-weight:bold;">Computational Genomics Department</span>
+            <br> Principe Felipe Research Center, Valencia, Spain
+            <br> 2016
+        </stv-footer>
+    </template>
+
+    <script>
+        Polymer({
+            is: "application-element",
+            behaviors: [StvApplicationBehavior],
+            properties: {
+                allowedTools: {
+                    type: Array,
+                    value: function() {
+                        return ['*'];
+                    }
+                },
+                bioformats: {
+                    type: Array,
+                    notify: true,
+                    value: [BIOFORMATS["VARIANT"]]
+                },
+
+            },
+            ready: function() {
+                var me = this;
+                this.selectedOption = "home";
+                this.checkShowMenuOnLogin();
+            },
+            handleFileSelect: function(e) {},
+            handleJobSelect: function(e) {
+                var me = this;
+                var job = e.detail;
+                if (job && job.status === 'DONE') {
+                    this.set('selectedOption', 'job');
+                    this.$.report.hideJobInformation = true;
+                    this.$.report.set('job', job);
+                }
+            },
+            handleLogin: function() {
+                if (Cookies('bioinfo_user').indexOf("anonymous___") != -1) {
+                    this.setMenu('home');
+                } else {
+                    this.setMenu('home');
+                }
+                if (this._lastLoggedPanel) {
+                    this._lastLoggedPanel.show();
+                    this._lastLoggedPanel = null;
+                }
+                if (this._lastLoggedMenu) {
+                    this.setMenu(this._lastLoggedMenu);
+                    this._lastLoggedMenu = null;
+                }
+                this.$.home.isLogged = true;
+                this.checkShowMenuOnLogin();
+            },
+            handleLogout: function() {
+                this.$.home.isLogged = false;
+                this.setMenu('home');
+                this.checkShowMenuOnLogin();
+            },
+            handleUserNeedRefresh: function() {
+                this.$.stvHeader.getUserInfo(true);
+            },
+            handleFeedback: function() {
+                this.$.feedback.hidden = !this.$.feedback.hidden;
+            }
+        });
+    </script>
+</dom-module>

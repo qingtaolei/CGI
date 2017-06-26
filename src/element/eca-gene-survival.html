@@ -1,0 +1,114 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<dom-module id="eca-gene-survival">
+    <style is="custom-style"
+           include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            width: 100%;
+        }
+
+        stv-table {
+            box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
+            overflow-y: hidden;
+        }
+
+        stv-table::shadow #list {
+            min-height: 200px;
+        }
+
+        stv-table::shadow {
+            font-size: 11px;
+        }
+
+        stv-table::shadow .table-row {
+            height: 25px;
+        }
+
+        stv-table::shadow .table-header-field > .name.stv-table {
+            padding: 4px 0;
+        }
+
+        #mafChart {
+            border: 1px solid rgba(125, 125, 125, 0.4);
+            box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
+            margin: 0 auto;
+            overflow-x: auto;
+            height: 350px;
+        }
+
+    </style>
+    <template>
+        <!-- <div hidden$="{{isEmpty}}" class="horizontal layout wrap center-justified">
+            <!--stv-table id="table" enable-export enable-paging></stv-table-->
+            <!--div id="mafChart" hidden></div-->
+        <div class="horizontal layout">
+            <div hidden$="{{isEmpty}}" style="height:40px;padding:10px 50px;">
+                <img src="{{survivalcurve}}" >
+            </div>
+            <div id="legend" hidden$="{{isEmpty}}">
+                    <i class="fa fa-lightbulb-o" aria-hidden="true" style="width:100px;font-size:16px;color:#32b0cd"></i>
+                    <br>- Samples were divided into two groups according to mutation status of this gene.
+                    <br>- The difference of overall survival between the two groups was estimated using log-rank test and Kaplan–Meier method.
+                    <br>- All the samples of this cancer type in TCGA were included.
+            </div>
+            <div hidden$="{{!isEmpty}}" style="padding:20px 50px;">
+                No survival information found.
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: 'eca-gene-survival',
+        properties: {
+            row: {
+                type: Object,
+                observer: 'rowChanged'
+            },
+            survivalcurve: {
+                type: Object,
+            },
+            isEmpty: {
+                value: false,
+                type: Boolean
+            }
+        },
+        ready: function () {
+            //this.$.table.columns = this._columns;
+            //console.log(survivalcurve)
+        },
+        rowChanged: function (neo, old) {
+          var me = this;
+            if (neo) {
+              //var geneexpression = IDMICG_HOST +  "/CGD/geneexpression/"+this.cancer +"/"+this.cancer+"." + neo.gene + ".expression.png";
+
+                var genesurvival = IDMICG_HOST + "/CGD/genesurvival/" +this.cancer +"/" +neo.gene +"."+this.cancer + ".all_survival.png";
+                //console.log(genesurvival)
+                var x = this._imageExists(genesurvival, function(exists) {
+                  if(exists){
+                    me.set("survivalcurve",genesurvival);
+                    me.isEmpty = false;
+                  }else{
+                    me.isEmpty = true;
+                  }
+                })
+            }
+        },
+        _imageExists: function(url, cb) {
+            var request = new XMLHttpRequest();
+            request.onload = function() {
+              if(request.status == 200){
+                cb(true);
+              }else{
+                cb(false);
+              }
+            };
+            request.onerror = function() {
+                cb(false);
+            };
+            request.open("GET", url);
+            request.send();
+        }
+    });
+</script>

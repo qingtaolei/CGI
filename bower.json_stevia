@@ -1,0 +1,22 @@
+{
+    "name": "stevia-scaffold",
+    "version": "0.1.0",
+    "homepage": "",
+    "authors": [
+        "user <user@domain.com>"
+    ],
+    "license": "GPLv2",
+    "private": true,
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "dependencies": {
+        "stevia-elements": "git://github.com/babelomics/stevia-elements.git#master",
+        "network-viewer": "git://github.com/babelomics/network-viewer.git#master",
+        "pathway-viewer": "git://gitlab.bioinfo.cipf.es/bioinfo/pathway-viewer.git#master"
+    }
+}

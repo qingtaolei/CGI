@@ -1,0 +1,207 @@
+<link rel="import" href="eca-result-static-filters.html">
+<link rel="import" href="eca-result-form.html">
+
+<dom-module id="eca-result-filters">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            margin: 10px;
+        }
+
+        #filters {
+            width: 250px;
+        }
+
+        eca-result-form {
+            margin-top: 10px;
+            width: 260px;
+        }
+
+        stv-tooltip::shadow #messageInfo::shadow {
+            height: 300px;
+            width: 500px;
+            background-color: #d3d3d3;
+            border: 1px solid #d3d3d3;
+            color: black;
+            font-style: normal;
+        }
+
+        stv-tooltip::shadow .closeInfo::shadow {
+            margin-left: 490px;
+        }
+
+        #filter-name {
+            text-overflow: ellipsis;
+            width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .filterHistory {
+            font-style: italic;
+            margin: 0 auto;
+            color: #a6a6a6;
+        }
+
+        .clear-but {
+            width: 100px;
+            background-color: #f0f4f4 !important;
+        }
+
+        .title {
+            margin-top: 10px;
+            border-bottom: 1px solid #445D76;
+            font-weight: bold;
+        }
+
+        .name {
+            width: 300px;
+        }
+
+        .num {
+            width: 100px;
+        }
+        #loading {
+            position: absolute;
+            left: 180px;
+            top: 35px;
+        }
+
+        .titleVar {
+            font-size: 18px;
+            border-bottom: thin solid #edebe3;
+            color: #204854;
+            padding-bottom: 13px;
+        }
+
+        .tabs {
+            margin: 5px 15px 0 0;
+            padding: 0 2px;
+            border-bottom: 1px solid transparent;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .tabs:hover {
+            border-bottom: 1px solid #8ba7a7;
+            color: #8ba7a7;
+            font-weight: bold;
+        }
+
+        .tabs[data-checked] {
+            border-bottom: 2px solid #225e71;
+            color: #222;
+            font-size: 13px;
+        }
+    </style>
+    <template>
+        <div id="filters">
+            <div class="titleVar">
+                Variant Filters
+            </div>
+            <div class="horizontal layout" style="margin-bottom: 10px;">
+                <div class="tabs" on-click="handleView" data-value="static" data-checked$="{{computeView(view, 'static')}}">
+                    Static Filters
+                </div>
+                <div class="tabs" on-click="handleView" data-value="custom" data-checked$="{{computeView(view, 'custom')}}">
+                    Custom Filters &nbsp;
+                </div>
+            </div>
+            <eca-result-static-filters id="ecaResultStaticFilters" data="{{data}}" query={{query}} value={{value}} hidden$="{{!computeView(view, 'static')}}"></eca-result-static-filters>
+
+            <div id="ecaResultCustomFilters" class="vertical layout" hidden$="{{!computeView(view, 'custom')}}">
+                <eca-result-form id="custom" query={{query}} filter-data="{{filterData}}" data="{{data}}" job="{{job}}"></eca-result-form>
+            </div>
+            <div id="loading" hidden$="{{!loading}}">
+                <i class="fa fa-circle-o-notch fa-spin"></i> Loading...
+            </div>
+
+        </div>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: "eca-result-filters",
+        properties: {
+            view: {
+                type: String,
+                value: 'static'
+            },
+            query: {
+                type: Object,
+                notify: true,
+                oberver: 'queryChanged'
+            },
+            data: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+                notify: true,
+                observer: 'dataChanged'
+            },
+            value: {
+                type: Object,
+                value: function() {
+                    return {};
+                },
+                notify: true,
+                observer: 'valueChanged'
+            },
+            job: {
+                type: Object,
+                value: function() {
+                    return {};
+                }
+            },
+            filterData: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+                notify: true,
+                observer: "filterDataChanged"
+            },
+            loading: {
+                type: Boolean,
+                value: false
+            }
+        },
+        ready: function() {
+        },
+        handleView: function(e) {
+            var me = this;
+             this.$.ecaResultStaticFilters.hidden = true;
+             this.$.ecaResultCustomFilters.hidden = true;
+             this.loading = true;
+            setTimeout(function() {
+                me.$.ecaResultStaticFilters.ready();
+                me._clearFilter();
+                me.loading = false;
+                me.view = e.target.dataset.value;
+            }, 50)
+            //console.log(this.data)
+        },
+        _clearFilter: function() {
+            this.query = {};
+            this.$.custom.clearForm();
+        },
+        computeView: function(view, value) {
+            return view === value;
+        },
+        dataChanged: function(neo, old) {
+        },
+        queryChanged: function(neo, old) {},
+        valueChanged: function(neo, old) {},
+        filterDataChanged: function(neo, old) {
+        },
+        initialWhenJobChanges: function() {
+            this.view = 'static';
+            this.$.ecaResultStaticFilters.ready();
+            this.$.custom.clearForm();
+        }
+
+    });
+</script>

@@ -1,0 +1,30 @@
+{
+  "name": "pathact",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "main": [
+    "pathact-index.html"
+  ],
+  "authors": [
+    "Francisco Salavert Torres <frasator@gmail.com>"
+  ],
+  "license": "GPL-3.0",
+  "keywords": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "stevia-elements": "https://github.com/frasator/stevia-elements.git#master",
+    "network-viewer": "https://github.com/frasator/network-viewer.git#master",
+    "pathway-viewer": "https://github.com/frasator/pathway-viewer.git#master",
+    "paper-slider": "^1.0.12"
+  },
+  "private": true
+}

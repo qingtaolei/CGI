@@ -1,0 +1,224 @@
+<link rel="import" href="../../bower_components/stevia-elements/src/table/stv-table.html">
+<dom-module id="eca-variant-overview">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            width: 100%;
+        }
+        stv-table {
+            height: 200px;
+            border: 1px solid #d0d0d0;
+        }
+
+        stv-table::shadow .table-row {
+            height: 25px;
+        }
+
+        stv-table::shadow,
+        jso-variant-frequencies-grid::shadow stv-table::shadow {
+            font-size: 11px;
+        }
+
+        stv-table::shadow .table-pager > input {
+            width: 60px !important;
+        }
+        #legend {
+            margin: 0 auto;
+            width: 50%;
+        }
+    </style>
+    <template>
+        <div class="horizontal layout">
+            <div id="overview" on-rowclick="handleRowClick">
+            </div>
+            <div style="margin-left:30px;">
+            <!--stv-table data="{{variantsum}}" columns="{{variantsumcolumns}}" enable-resize></stv-table-->
+              <!-- <div id="legend">
+                  <i class="fa fa-lightbulb-o" aria-hidden="true" style="font-size:16px;color:#32b0cd"></i>
+                  <br>- All values are normalized between zero and one.
+                  <br>- Values closest to one are deleterious and closest to zero are benign.
+                  <br>- Polyphen and Sift are opposed, but in this case, Sift has been calculated as 1 - Sift.
+              </div> -->
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'eca-variant-overview',
+            properties: {
+                row: {
+                    type: Object,
+                    observer: 'rowChanged'
+                },
+                // params: {
+                //     type: Array,
+                //     value: function() {
+                //         return [];
+                //     }
+                // },
+                variantsum: {
+                      type: Array
+                },
+                variantsumcolumns:{
+                  type: Array,
+                  notify: true,
+                  value:[{
+                      name: 'variant',
+                      title: 'Variant',
+                      width: 50,
+                  },
+                  {
+                      name: 'cadd',
+                      title: 'CADD',
+                      width: 40
+                  },
+                  {
+                      name: 'mutationassessor',
+                      title: 'MutationAssessor',
+                      width: 100
+                  },
+                  {
+                      name: 'fathmm',
+                      title: 'FATHMM',
+                      width: 50
+                  },
+                  {
+                      name: 'lrt',
+                      title: 'LRT',
+                      width: 30
+                  },
+                  {
+                      name: 'mutationtester',
+                      title: 'MutationTaster',
+                      width: 100
+                  },
+                  {
+                      name: 'polyphen2',
+                      title: 'Polyphen2',
+                      width: 60
+                  },
+                  {
+                      name: 'sift',
+                      title: 'SIFT',
+                      width: 40
+                  }]
+                },
+            },
+            rowChanged: function(neo, old) {
+                if (neo) {
+                    var me = this;
+
+                    var variant = neo.chromosome + "|" + neo.start + "|" + neo.reference + "|" + neo.alternate;
+                    //var url=ECA_DB_HOST+'/varlisttable.php?gene='+this.gene.name;
+                    // var url=ECA_DB_HOST+'/varsumtable.php?gene='+variant;
+                    //console.log(variant)
+                    // this._doRequest(url, function(response){
+                    //  me.set('variantsum', response);
+                    // });
+                }
+            },
+            _doRequest: function(url, cb) {
+                var me = this;
+                var request = new XMLHttpRequest();
+                request.onload = function() {
+                    cb(JSON.parse(this.responseText));
+                };
+                request.onerror = function() {
+                    console.log('Error loading remote file');
+                };
+                request.open("GET", url);
+                request.send();
+            },
+            // _createPolarChart: function(row) {
+            //     var me = this;
+            //     var variant = row.chromosome + ":" + row.start + ":" + row.reference + ":" + row.alternate;
+            //     var categories = [];
+            //     var data = [];
+            //     var color = '#76afd5';
+            //     var sift = null;
+            //     var polyphen = null;
+            //     for (var i = 0; i < this.params.length; i++) {
+            //         categories.push(this.params[i].source);
+            //         if (this.params[i].source == "sift") {
+            //             sift = this.params[i].score;
+            //         }
+            //         if (this.params[i].source == "polyphen") {
+            //             polyphen = this.params[i].score;
+            //             data.push(this._parseFloat(this.params[i].score));
+            //         } else {
+            //             data.push(1 - this._parseFloat(this.params[i].score));
+            //         }
+            //     }
+            //     if (sift != null && polyphen != null) {
+            //         color = '#8ccd8c';
+            //         if (sift <= 0.05 && polyphen >= 0.95) {
+            //             color = '#f47070';
+            //         } else if (sift <= 0.05 || polyphen >= 0.95) {
+            //             color = '#f59f67';
+            //         }
+            //     }
+            //
+            //     var chart = new Highcharts.Chart({
+            //         chart: {
+            //             polar: true,
+            //             type: 'line',
+            //             renderTo: me.$.overview,
+            //             width: 510,
+            //             height: 300
+            //
+            //         },
+            //         credits: {
+            //             enabled: false
+            //         },
+            //         legend: {
+            //             enabled: false
+            //         },
+            //         title: {
+            //             text: variant,
+            //             x: -80
+            //         },
+            //         xAxis: {
+            //             categories: categories,
+            //             tickmarkPlacement: 'on',
+            //             lineWidth: 1
+            //         },
+            //
+            //         yAxis: {
+            //             gridLineInterpolation: 'polygon',
+            //             lineWidth: 0,
+            //             min: 0,
+            //             max: 1
+            //         },
+            //
+            //         series: [{
+            //             type: 'area',
+            //             name: variant,
+            //             data: data,
+            //             color: color,
+            //             pointPlacement: 'on'
+            //         }]
+            //
+            //     });
+            // },
+            // _parseFloat: function(data) {
+            //     var aux = parseFloat(data);
+            //     aux = isNaN(aux) ? null : aux;
+            //     return aux;
+            // },
+            // _getScores: function(data) {
+            //     for (var i = 0; i < data.length; i++) {
+            //         var elem = data[i];
+            //         var aux = Utils.clone(elem);
+            //         aux.score = Math.abs(elem.score);
+            //         if (aux.score > 1) {
+            //             aux.score = 1 / aux.score;
+            //         }
+            //         aux.source = elem.source;
+            //
+            //         this.params.push(aux);
+            //     }
+            //}
+        })
+    </script>
+</dom-module>

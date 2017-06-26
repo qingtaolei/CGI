@@ -1,0 +1,401 @@
+<link rel="import" href="../element/eca-path-survival.html">
+<dom-module id="eca-result-pathway">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+         :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            height: 100%;
+        }
+
+        .title {
+            font-size: 18px;
+            /*margin: 7px 5px;*/
+            color: #204854;
+            padding: 13px 0px;
+        }
+
+        stv-table {
+            height: 255px;
+            width: 1400px;
+            position: center;
+            border: 1px solid #d0d0d0;
+        }
+
+        stv-table::shadow .table-row {
+            height: 25px;
+        }
+
+        stv-table::shadow,
+        jso-variant-frequencies-grid::shadow stv-table::shadow {
+            font-size: 11px;
+        }
+
+        stv-table::shadow .table-pager>input {
+            width: 40px !important;
+        }
+
+        jso-variant-frequencies-grid,
+        jso-genome-viewer-element {
+            margin: 0 auto;
+            box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
+            /*overflow-y: auto;*/
+            /*height: 370px;*/
+        }
+
+        #tools {
+            margin-top: 5px;
+            width: 100%;
+        }
+
+        #commentsTextArea {
+            box-sizing: border-box;
+            display: block;
+            width: 50%;
+            height: 200px;
+            margin-top: 10px;
+        }
+
+        .tabs {
+            margin: 5px 15px 0 0;
+            padding: 0 2px;
+            border-bottom: 1px solid transparent;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .tabs:hover {
+            border-bottom: 1px solid #8ba7a7;
+            color: #8ba7a7;
+            font-weight: bold;
+        }
+
+        .tabs[data-checked] {
+            border-bottom: 2px solid #225e71;
+            color: #222;
+            font-size: 13px;
+        }
+
+        .numFilter {
+            /*padding: 1px 7px;*/
+            background-color: #445D76;
+            border-radius: 50%;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+            margin-left: 10px;
+            margin-top: 2px;
+            line-height: 20px;
+            height: 20px;
+            width: 20px;
+            text-align: center;
+        }
+
+        pathway-viewer {
+            height: 800px !important;
+            padding: 10px;
+        }
+
+        stv-tab {
+            height: 842px;
+        }
+    </style>
+    <template>
+        <div class="title">{{title}}</div>
+        <stv-table id="table" data="{{_data}}" enable-paging enable-select enable-export enable-resize on-rowclick="handleRowClick"></stv-table>
+
+        <div class="title">
+            Systermatic Pathway Map in {{cancer}} Cancer Genomic Data
+        </div>
+
+
+        <stv-tab id="tabs" on-tab-change="handleTabChange">
+            <pathway-viewer id="mutPathwayViewer" class="tab" data-tab="PathAct Variation Map" path="mut.pathway" path-type="session"></pathway-viewer>
+            <pathway-viewer id="expPathwayViewer" class="tab" data-tab="PathAct Expression Map" path="exp.pathway" path-type="session" hidden></pathway-viewer>
+            <!-- <div class="tab" data-tab="Pathway Mutation Map Across Samples">ARE</div> -->
+            <eca-path-survival class="tab" data-tab="Survival Curve" cancer="{{cancer}}" id="survival" hidden></eca-path-survival>
+            <div class="tab" data-tab="Comments" hidden>
+                <div style="margin-top: 10px">
+                    <textarea id="commentsTextArea" class="jso commentsTextArea" placeholder="Comments..."></textarea>
+                </div>
+            </div>
+        </stv-tab>
+
+
+        <!-- <jso-genome-viewer-element id="gv" hidden on-hidden="handleGenomeViewerHidden"></jso-genome-viewer-element> -->
+
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: "eca-result-pathway",
+        properties: {
+            data: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+                observer: 'dataChanged'
+            },
+            _data: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+                notify: true
+            },
+            title: {
+                type: String,
+                value: ""
+            },
+            query: {
+                type: Object,
+                value: function() {
+                    return {};
+                },
+                observer: 'queryChanged'
+            },
+            cancer: {
+                type: Object,
+                value: ""
+            },
+            filterData: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+                notify: true,
+                observer: "filterDataChanged"
+            },
+            typeData: {
+                type: String,
+                value: ""
+            },
+            _lastSelectedRow: {
+                type: Object
+            },
+            fileNameMap: {
+                type: Object,
+                observer: "fileNameMapChanged"
+            }
+
+        },
+        _columnsPathway: [{
+            name: 'pathwayid',
+            title: "Pathway ID",
+            width: 100,
+            formula: function(row) {
+                var url = "http://www.genome.jp/kegg-bin/show_pathway?" + row.pathwayid;
+                return '<a href="' + url + '" target="_blank">' + row.pathwayid + '</a>'
+            }
+        }, {
+            name: 'pathwayname',
+            title: "Pathway Name",
+            width: 180
+        }, {
+            name: 'numbofgeneaffacted',
+            title: "Numb of Gene Affacted",
+            width: 150,
+            formula: function(row) {
+                if (row['numbofgeneaffacted'] == "NaN") {
+                    return ".";
+                } else {
+                    return parseInt(row['numbofgeneaffacted'].toString());
+                }
+            },
+            defaultValue: '.'
+        }, {
+            name: 'totalgeneinpathway',
+            title: "Total Gene in Pathway",
+            width: 170,
+            formula: function(row) {
+                if (row['totalgeneinpathway'] == "NaN") {
+                    return ".";
+                } else {
+                    return parseInt(row['totalgeneinpathway'].toString());
+                }
+            },
+            defaultValue: '.'
+        }, {
+            name: 'pathenrichpvalue',
+            title: "Pathway Enrichment Pvalue",
+            width: 150,
+            defaultValue: '.',
+            styleFormula: function(row) {
+                var style = {
+                    backgroundColor: '#8ccd8c',
+                    color: '#fff'
+                };
+                if (row.pathenrichpvalue == '.') {
+                    style.backgroundColor = '#76afd5';
+                } else if (row.pathenrichpvalue <= 0.05) {
+                    style.backgroundColor = '#f47070';
+                }
+                return style;
+            }
+        }, {
+            name: 'logrankpvalue',
+            title: "Survival Analysis Pvalue in This Cancer",
+            width: 200,
+            defaultValue: '.',
+            styleFormula: function(row) {
+                var style = {
+                    backgroundColor: '#8ccd8c',
+                    color: '#fff'
+                };
+                if (row.logrankpvalue == '.') {
+                    style.backgroundColor = '#76afd5';
+                } else if (row.logrankpvalue <= 0.05) {
+                    style.backgroundColor = '#f47070';
+                }
+                return style;
+            }
+        }, {
+            name: 'pathwaymutatedrate',
+            title: 'Pathway Mutated Rate in This Cancer',
+            width: 250,
+            defaultValue: '.',
+            formula: function(row) {
+                // if(row.pathwaymutatedrate){
+                //     return parseInt(row['pathwaymutatedrate'].toString());
+                // }else{
+                //   return ".";
+                // }
+                var d = document.createElement("div");
+                var dt = document.createElement("div");
+                var db = document.createElement("div");
+                var dbp = document.createElement("div");
+                dt.style.display = "inline-block";
+                dt.style.width = "45px";
+                dt.style.marginRight = "3px";
+                db.style.display = "inline-block";
+                dt.innerHTML = row.pathwaymutatedrate;
+                db.style.width = "40px";
+                db.style.height = "10px";
+                db.style.position = "relative";
+                db.style.border = "1px solid steelblue";
+                dbp.style.height = "100%";
+                dbp.style.width = row.pathwaymutatedrate * 100 / 0.5 + "%";
+                dbp.style.backgroundColor = "steelblue";
+                db.appendChild(dbp);
+                d.appendChild(dt);
+                d.appendChild(db);
+                return d.outerHTML;
+            }
+        }],
+        ready: function() {
+            // this.selectedMenuTool = this.$.menu.querySelector('div');
+            var me = this;
+            if (this.typeData == "pathway") {
+                this.$.table.columns = this._columnsPathway;
+            }
+            this.$.mutPathwayViewer.reload();
+            this.$.expPathwayViewer.reload();
+        },
+
+        handleRowClick: function(e) {
+            var row = e.detail.row;
+            this._rowSelected(row);
+        },
+        _rowSelected: function(row) {
+            this.set('_lastSelectedRow', row);
+            //this.set('pathwayid',row.pathwayid);
+            this.$.survival.row = row;
+          //  console.log(this.$.survival.pathwayid)
+          //  console.log(this.pathwayid)
+            if (this.$.tabs.option == 'PathAct Variation Map' && stv.utils.closest(this.$.mutPathwayViewer, '[hidden]') == null) {
+                this.$.mutPathwayViewer.reload();
+                this.$.mutPathwayViewer.selectCategoryById(row.pathwayid);
+            }
+            if (this.$.tabs.option == 'PathAct Expression Map' && stv.utils.closest(this.$.expPathwayViewer, '[hidden]') == null) {
+                this.$.expPathwayViewer.reload();
+                this.$.expPathwayViewer.selectCategoryById(row.pathwayid);
+            }
+        },
+        dataChanged: function(neo, old) {
+            var _data = [];
+            for (var i = 0; i < this.data.length; i++) {
+                var elem = this.data[i];
+                _data.push(elem);
+            };
+            //this.view = 'pathmutation';
+          //  this.$.tabs.option == 'PathAct Variation Map'
+            this._data = _data;
+
+            if (this._data[0] != null) {
+                this.$.table.set('selected', [this._data[0]]);
+                //this.$.pathmutation.hidden = false;
+                this._rowSelected(this._data[0]);
+            } else {
+                // this.$.pathmutation.hidden = true;
+            }
+
+        },
+        queryChanged: function(neo, old) {
+            if (neo) {
+                // neo => query
+                var data = [];
+                for (var i = 0; i < this.data.length; i++) {
+                    var elem = this.data[i];
+                    if (this._applyFilters(elem, neo) == 1) {
+                        data.push(elem);
+                    }
+                };
+                this.set('_data', data);
+                this.$.table.set('selected', [this._data[0]]);
+                this.set('filterData', this._data);
+                if (neo['filterView'] != null && neo['filterView'] == 'filterA') {
+                    var report = document.getElementById('ecaResultReport');
+                    report._getMostPathogenic(this.filterData);
+                }
+            }
+        },
+        // handleMenuClick: function(e) {
+        //     if (this._data[0] != null) {
+        //         this.selectedMenuTool = e.currentTarget;
+        //     }
+        // },
+        computeView: function(view, value) {
+            return view === value;
+        },
+        selectedMenuChanged: function(neo, old) {
+            if (old) {
+                old.removeAttribute('selected');
+                this.$[old.dataset.option].setAttribute('hidden', '');
+            }
+            if (neo && !this.hidden) {
+                neo.setAttribute('selected', '');
+                this.$[neo.dataset.option].removeAttribute('hidden');
+            }
+        },
+        filterDataChanged: function(neo, old) {
+            this.set('filterData', neo);
+            if (this.filterData[0] != null) {
+                this.$.table.set('selected', [this.filterData[0]]);
+                // this.$.pathmutation.hidden = false;
+                this._rowSelected(this.filterData[0]);
+            } else {
+                // this.$.pathmutation.hidden = true;
+                this.overviewComent = "";
+            }
+        },
+        fileNameMapChanged: function(neo) {
+            if (neo) {
+                this.$.mutPathwayViewer.set('sessionFileNameMap', this.fileNameMap);
+                this.$.expPathwayViewer.set('sessionFileNameMap', this.fileNameMap);
+            }
+        },
+        handleTabChange: function(e) {
+            var me = this
+            var name = e.detail.name;
+            if (name == 'PathAct Variation Map' && stv.utils.closest(this.$.mutPathwayViewer, '[hidden]') == null) {
+              this.$.mutPathwayViewer.reload();
+              this.$.mutPathwayViewer.selectCategoryById(me._lastSelectedRow.pathwayid);
+                }
+            if (name == 'PathAct Expression Map' && stv.utils.closest(this.$.expPathwayViewer, '[hidden]') == null) {
+              this.$.expPathwayViewer.reload();
+              this.$.expPathwayViewer.selectCategoryById(me._lastSelectedRow.pathwayid);
+            }
+        }
+    });
+</script>

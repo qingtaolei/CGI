@@ -1,0 +1,1009 @@
+<!-- <link rel="import" href="report-page.html"> -->
+<link rel="import" href="../../conf/eca-panel-export.html">
+<dom-module id="eca-result-report">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            margin: 5px;
+        }
+
+        #report {
+            border: 1px solid #d0d0d0;
+            width: 60%;
+            /*width: 750px;*/
+            height: 750px;
+            margin: 0 auto;
+            margin-left: 0px;
+            margin-top: 10px;
+            overflow-y: auto;
+            background-color: white;
+            padding: 20px;
+            page-break-inside: avoid;
+        }
+
+        .jobName {
+            font-size: 25px;
+            color: #445D76;
+            font-weight: bold;
+        }
+
+        .numbers {
+            color: black;
+            text-align: right;
+        }
+
+        table {
+            margin-top: 20px;
+            border: 2px solid #dadada;
+            border-collapse: collapse;
+            background-color: #fcfcfc;
+            font-size: 10px;
+            word-wrap: break-word;
+        }
+
+        th,
+        td {
+            border: 1px solid #dadada;
+            padding: 3px;
+        }
+
+        th {
+            background-color: #F1F3F5;
+        }
+
+        .exportBut {
+            width: 200px;
+            margin-top: 10px;
+            color: #445D76;
+            font-weight: bold;
+        }
+
+        .conclusions {
+            width: 95%;
+            height: 100px;
+            margin-top: 5px;
+            resize: none;
+            border: 1px solid #d0d0d0;
+        }
+
+        .colum {
+            word-wrap: break-word;
+            max-width: 170px;
+            max-height: 50px!important;
+        }
+
+        div {
+            margin-top: 10px;
+        }
+
+        #reportOptions {
+            margin: 0 auto;
+            width: 20%;
+        }
+
+        .titlePreview {
+            font-size: 18px;
+            color: #445D76;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #445D76;
+            padding: 2px;
+        }
+
+        #aditional input {
+            width: 80%;
+            border: 1px solid #ccc;
+            padding-left: 5px;
+        }
+
+        @media print {
+            @page {
+                margin-top: 20px;
+            }
+            body {
+                margin: 1.6cm;
+            }
+        }
+
+        .colorButton {
+            color: var(--text-primary-color);
+            margin-top: 15px;
+            background-color: var(--dark-button-color);
+            width: 200px;
+        }
+
+        .colorButton:hover {
+            background-color: var(--light-button-color);
+        }
+
+        .chart {
+            padding: 10px;
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+    </style>
+    <template>
+        <div class="horizontal layout">
+            <div id="reportOptions" class="">
+                <div class="titlePreview">Select to Show</div>
+                <ul>
+                    <div class="">
+                        <input on-click="showInReport" type="checkbox" value="aditional" checked> Patient data</div>
+                    <div class="">
+                        <input on-click="showInReport" type="checkbox" value="stadistics" checked> Generic data</div>
+                    <div class="">
+                        <input on-click="showInReport" type="checkbox" value="values" checked> Static filter resume</div>
+                    <div class="">
+                        <input on-click="showInReport" type="checkbox" value="customFilters" checked> Custom filter resume</div>
+                    <div class="">
+                        <input on-click="showInReport" type="checkbox" value="reportConclusions"> Editable conslusions</div>
+                    <div class="">
+                        <input id="diagCheck" on-click="showInReport" type="checkbox" value="diagResult" checked> Diagnostic table</div>
+                    <div class="">
+                        <input on-click="showInReport" type="checkbox" value="mostPathogenicResult"> Most Driver Factors</div>
+                    <div class="">
+                        <input on-click="showInReport" type="checkbox" value="secResult"> Secondary findinds (with last custom filter used)</div>
+                </ul>
+                <!-- <div class="stv-btn stv-btn-shdw colorButton" on-click="handleSaveReport" title="Save report for this Job"><i class="fa fa-floppy-o"></i>&nbsp; Save report</div> -->
+                <br>
+                <div class="stv-btn stv-btn-shdw exportBut" on-click="handleExportPDF"><i class="fa fa-download"></i>&nbsp; Export report to PDF/Print</div>
+                <!--div class="stv-btn stv-btn-shdw exportBut" on-click="exportPanelPDF"><i class="fa fa-download"></i>&nbsp; Export panel to PDF/Print</div-->
+            </div>
+            <!--eca-panel-export id="panelExport">
+            </eca-panel-export hidden-->
+
+            <div id="report">
+                <div class="eca-result-report-0">
+                    <div class="horizontal layout">
+                        <img style="margin:3px;height:35px;" src="../../images/bier-text.svg" />
+                        <!-- <div class="flex jobName">eca report</div> -->
+                        <div style="end-justify;color:#888; margin-right:15px;"><i>Precision Medicine&nbsp;
+                            <span></span></i>
+                        </div>
+                        <div style="end-justify">&nbsp;
+                            <span>{{requestDate}}</span>
+                        </div>
+                    </div>
+                    <br>
+                    <div>Job name: &nbsp;
+                        <span><b>{{job.name}}</b></span></div>
+                    <div>Job description: &nbsp;
+                        <span><i>{{job.description}}</i></span></div>
+                    <br>
+                    <div class="" id="aditional">
+                        <div class="titlePreview">
+                            Patient data
+                        </div>
+                        <ul>
+                            <div>
+                                Patient ID:&nbsp;
+                                <b><input type="text" data-name="patientID">
+                            <span id="patientID" hidden>{{patientID}}</span></b>
+                            </div>
+                            <div>
+                                Instrument:&nbsp;
+                                <b><input type="text" data-name="instrument">
+                            <span id="instrument" hidden>{{instrument}}</span></b>
+                            </div>
+                            <div>
+                                Analyzed by:&nbsp;
+                                <b><input type="text" data-name="analyzedBy">
+                            <span id="analyzedBy" hidden>{{analyzedBy}}</span></b>
+                            </div>
+                            <div>
+                                Sample Origin:&nbsp;
+                                <b><input type="text" data-name="sampleOrigin">
+                            <span id="sampleOrigin" hidden>{{sampleOrigin}}</span></b>
+                            </div>
+                            <div>
+                                Patient Suspected Diagnosis:&nbsp;{{job.description}}
+                                <b><span id="suspDiag">{{suspDiag}}</span></b>
+                            </div>
+                            <div>
+                                Patient Diagnosis:&nbsp;
+                                <!-- <input type="text" data-name="confDiag"> -->
+                                <b><input list="dataListPheVCF" data-name="confDiag" value={{search::input}}>
+                            <datalist id="dataListPheVCF">
+                                <template is="dom-repeat" items="{{icd10}}">
+                                    <option value="{{item}}">{{item.phenotype}}</option>
+                                </template>
+                                <!-- <template is="dom-repeat" items="{{allDiseasesData}}">
+                                    <option value="{{item.phenotype}}">{{item.phenotype}}</option>
+                                </template> -->
+                            </datalist>
+                            <!-- <stv-tooltip icon="arrow-circle-down"></stv-tooltip> -->
+                            <span id="confDiag" hidden>{{confDiag}}</span></b>
+                            </div>
+                        </ul>
+                    </div>
+                    <br>
+                    <div id="stadistics">
+                        <div class="titlePreview">
+                            Generic data
+                        </div>
+                        <ul>
+                            <div>Total Variants: &nbsp;
+                                <span><b>{{totalData}}</b></span></div>
+                            <div>Diagnostic Variants: &nbsp;
+                                <span><b>{{diagData.length}}</b></span></div>
+                            <div>Secondary Variants: &nbsp;
+                                <span><b>{{secData.length}}</b></span></div>
+                        </ul>
+                    </div>
+                    <br>
+                    <div id="values">
+                        <div class="titlePreview">
+                            Static filter resume
+                        </div>
+                        <ul>
+                            <b>
+                            Variants found with static filters:
+                        </b>
+                            <ul>
+                                <div>A: Most Likely Driver Factor: &nbsp;
+                                    <span><b>{{value.md}}</b></span>
+                                </div>
+                                <div>B: Potential Driver Factor: &nbsp;
+                                    <span><b>{{value.pd}}</b></span>
+                                </div>
+                                <div>C: Support Driver Factor: &nbsp;
+                                    <span><b>{{value.sd}}</b></span>
+                                </div>
+                                <div>D: Likely Bengin: &nbsp;
+                                    <span><b>{{value.lb}}</b></span>
+                                </div>
+                                <div>E: Unkown Significance: &nbsp;
+                                    <span><b>{{value.us}}</b></span>
+                                </div>
+                            </ul>
+                            <br>
+                        </ul>
+                    </div>
+                    <br>
+                    <div id="customFilters">
+                        <div class="titlePreview">
+                            Custom filter resume
+                        </div>
+                        <ul>
+                            <div>Variants Found: &nbsp;
+                                <span><b>{{filterData.length}}</b></span>
+                            </div>
+                            <div>Custom Filter Used: &nbsp;
+                                <span><i>{{filter}}</i></span>
+                            </div>
+                        </ul>
+                    </div>
+                    <br>
+                    <div id="reportConclusions" style="margin-top: 10px" hidden>
+                        <div class="titlePreview">
+                            Conclusions
+                        </div>
+                        <ul>
+                            <textarea class="conclusions"></textarea>
+                            <div id="divConclusions" hidden><i>{{divConclusions}}</i></div>
+                        </ul>
+                    </div>
+                    <br>
+                    <div id="diagResult">
+                        <div class="titlePreview">
+                            Theraputic Table
+                        </div>
+                        <ul>
+                            <div><i>Comments: &nbsp;</i>
+                                <span>{{comDiag}}</span>
+                            </div>
+                            <div id="reportDiagnostic">
+                            </div>
+                        </ul>
+                    </div>
+                    <br>
+                    <div id="mostPathogenicResult" hidden>
+                        <div class="titlePreview">Most Driver Factors Data Table</div>
+                        <ul>
+                            <div id="reportMostPathogenic">
+                            </div>
+                        </ul>
+                    </div>
+                    <div id="secResult" style="width: 500px; page-break-inside: avoid;" hidden>
+                        <div class="titlePreview">
+                            Somatic Mutation Filter Data Table
+                        </div>
+                        <ul>
+                            <div><i>Comments: &nbsp;</i>
+                                <span>{{comSec}}</span>
+                            </div>
+                            <div id="reportSecondary">
+                            </div>
+                        </ul>
+                    </div>
+                    <br>
+                    <div id="anexII">
+                        <!--div class="titlePreview">
+                            Panel Used
+                        </div>
+                        <ul>
+                            <div>Panel Name: &nbsp;
+                                <span><b>{{panelName}}</b></span>
+                            </div>
+                            <div>Panel Version: &nbsp;
+                                <span><b>{{panelVersion}}</b></span>
+                            </div-->
+                            <br>
+                            <div><b>Variants found for each gene:</b></div>
+                            <div id="genesChart" class="chart" hidden>
+                            </div>
+                            < <ul>
+                                <div>
+                                    <!-- <template is="dom-repeat" items="{{geneList}}">
+                                        <span style="margin-right:50px;">{{item.gene}}
+                                    <span>:&nbsp;<b>{{item.value}}</b></span></span>
+                                    </template> -->
+                                </div>
+                            </ul> >
+                        </ul>
+                    </div-->
+                </div>
+            </div>
+        </div>
+
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: "eca-result-report",
+        properties: {
+            job: {
+                type: Object,
+                value: function() {
+                    return {};
+                },
+                observer: 'jobChanged',
+            },
+            sample: {
+                type: Object,
+                value: function() {
+                    return {};
+                }
+            },
+            diagData: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+                observer: 'diagDataChange',
+            },
+            mostPathogenicData: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
+            },
+            secData: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
+            },
+            totalData: {
+                type: Number,
+                value: "",
+            },
+            secDataDiv: {
+                type: Array,
+                value: []
+            },
+            filterData: {
+                type: Array,
+                // value: function() {
+                //     return [];
+                // },
+                observer: 'filterDataChanged'
+            },
+            filter: {
+                type: String,
+                value: "-No filter used-"
+            },
+            filters: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
+            },
+            first: {
+                type: Number,
+                value: 0
+            },
+            value: {
+                type: Object,
+            },
+            suspDiag: {
+                type: String,
+                value: ""
+            },
+            geneMap: {
+                type: Object,
+                observer: "geneMapChange"
+            },
+            geneNames: {
+                type: Array,
+            },
+            geneList: {
+                type: Object,
+                value: function() {
+                    return {};
+                }
+            },
+            _columnsDiag: {
+                type: Array,
+                value: [{
+                    name: 'chr',
+                    title: "Chr",
+                    width: 25
+                }, {
+                    name: 'pos',
+                    title: "Pos",
+                    width: 50
+                }, {
+                    name: 'ref',
+                    title: "Ref",
+                    width: 25
+                }, {
+                    name: 'alt',
+                    title: "Alt",
+                    width: 25
+                },{
+                    name: 'gene',
+                    title: 'Gene',
+                    width: 50,
+                    defaultValue: '.'
+                }, {
+                    name: 'type',
+                    title: 'Classification',
+                    width: 75,
+                    defaultValue: '.'
+                },
+                {
+                    name: 'drugtarget',
+                    title: 'Drug Target',
+                    width: 120,
+                    defaultValue: '.'
+                }, {
+                    name: 'drug',
+                    title: 'Drugs',
+                    width: 120,
+                    defaultValue: '.'
+                }, {
+                    name: 'instruction',
+                    title: 'Implications',
+                    width: 300,
+                    defaultValue: '.'
+                }]
+            },
+            _columnsSec: {
+                type: Array,
+                value: [{
+                    name: 'chr',
+                    title: "Chr",
+                    width: 25
+                }, {
+                    name: 'pos',
+                    title: "Pos",
+                    width: 50
+                }, {
+                    name: 'ref',
+                    title: "Ref",
+                    width: 25
+                }, {
+                    name: 'alt',
+                    title: "Alt",
+                    width: 25
+                },{
+                    name: 'gene',
+                    title: 'Gene',
+                    width: 50,
+                    defaultValue: '.'
+                }, {
+                    name: 'ct',
+                    title: 'Conseq. Type',
+                    width: 75,
+                    defaultValue: '.'
+                },
+                {
+                    name: 'cadd',
+                    title: 'CADD',
+                    width: 100,
+                    defaultValue: '.'
+                }, {
+                    name: 'clinvarhgmd',
+                    title: 'Clinvar HGMD',
+                    width: 50,
+                    defaultValue: '.'
+                },
+                {
+                    name: 'cosmic',
+                    title: 'Cosmic',
+                    width: 50,
+                    defaultValue: '.'
+                }]
+            },
+            search: {
+                type: String,
+                value: "",
+                observer: 'searchNameChanged'
+            }
+        },
+        ready: function() {
+            //this.cellbaseVersion = CELLBASE_VERSION;
+            var date = new Date();
+            this.requestDate = date.toLocaleString();
+            if (localStorage.bioinfo_eca_diseases != null) {
+                this.allDiseasesData = JSON.parse(localStorage.bioinfo_eca_diseases);
+            }else {
+                /*$.ajax({
+                    url: "http://bioinfodev.hpc.cam.ac.uk/cellbase-legacy/webservices/rest/v3/hsapiens/feature/clinical/phenotype-gene?include=clinvar,gwas",
+                    //only in cellbase v3
+                    dataType: 'json',
+                    async: false,
+                    success: function(response, textStatus, jqXHR) {
+                        try {
+                            var data = response.response;
+                            var clinvar = data[0].result;
+                            var gwas = data[1].result;
+
+                            var diseases = [];
+
+                            //                            for (var i = 0; i < 100; i++) {
+                            for (var i = 0; i < clinvar.length; i++) {
+                                var dis = clinvar[i];
+                                dis.source = "clinvar";
+                                diseases.push(dis);
+                            }
+                            //                            for (var i = 0; i < 100; i++) {
+                            for (var i = 0; i < gwas.length; i++) {
+                                var dis = gwas[i];
+                                dis.source = "gwas";
+                                diseases.push(dis);
+                            }
+
+                            diseases.sort(function(a, b) {
+                                return a.phenotype.localeCompare(b.phenotype);
+                            });
+
+                            if (diseases.length > 0) {
+                                me.allDiseasesData = diseases;
+                                localStorage.bioinfo_eca_diseases = JSON.stringify(diseases);
+                            }
+
+                        } catch (e) {
+
+                        }
+
+                    }
+                });*/
+
+            }
+
+        },
+        searchNameChanged: function(e) {
+            var me = this;
+            if (this.search.length == 4) {
+                var formData = {};
+                formData.SearchText = this.search + '*';
+                formData.Search_Title = true;
+                formData.Search_Definition = false;
+                formData.Search_Inclusion = false;
+                formData.Search_Exclusion = false;
+                formData.Search_Note = false;
+                formData.Search_CodingHint = false;
+                formData.Search_Index = false;
+
+                var urlEncoded = stv.utils.queryString(formData);
+
+                var request = new XMLHttpRequest();
+
+                request.onload = function() {
+                    var dis = [];
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(this.response, "text/html");
+                    var diseases = doc.querySelectorAll('span');
+                    for (var i = 0; i < diseases.length; i++) {
+                        dis.push(diseases[i].innerHTML.trim());
+                    }
+                    me.set('icd10', dis);
+
+                };
+                request.onerror = function() {
+                    console.log("request error");
+                };
+                request.open("POST", 'http://proxy.babelomics.org/url.php/http://apps.who.int/classifications/icd10/browse/2016/en/AdvancedSearch', true);
+                request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+                request.send(urlEncoded);
+            }
+        },
+
+        print: function(data) {
+            var mywindow = window.open('', '', 'height=1000,width=1000');
+            mywindow.document.write('<html><head>');
+            var styles = document.getElementsByTagName('style');
+
+            mywindow.document.write('<style>');
+            for (var i = 0; i < styles.length; i++) {
+                mywindow.document.write(styles[i].innerHTML);
+            }
+            mywindow.document.write('</style>');
+
+            mywindow.document.write('</head><body>');
+            mywindow.document.write(data);
+            mywindow.document.write('</body></html>');
+
+            mywindow.document.close(); // necessary for IE >= 10
+            mywindow.focus(); // necessary for IE >= 10
+            mywindow.print();
+            mywindow.close();
+
+            this.$.reportConclusions.querySelector('textarea').hidden = false;
+            this.$.divConclusions.hidden = true;
+            elem = this.$.aditional.querySelectorAll('input');
+            for (var i = 0; i < elem.length; i++) {
+                var el = elem[i];
+                var name = el.dataset.name;
+                el.hidden = false;
+                this.$[name].hidden = true;
+
+            }
+            return true;
+        },
+
+        handleExportPDF: function(e) {
+            this._getTextInfo();
+            var me = this;
+            this.print(this.$.report.innerHTML);
+            return;
+            //
+            // var pdf = new jsPDF('p', 'px', 'a4');
+            // var options = {
+            //     // background: '#fff',
+            //     pagesplit: true,
+            // };
+            // pdf.addHTML(me.$.report, options, function() {
+            //     // pdf.addPage();
+            //     // pdf.save('web.pdf');
+            //     var string = pdf.output('datauristring');
+            //     pdf.output('save', 'sample-file.pdf');
+            //     //     // pdf.addHTML(me.$.export2, options, function() {
+            //     //     //         pdf.addPage();
+            //     //     //         pdf.addHTML(me.$.export3, options, function() {
+            //     //     //         })
+            //     //     //     })
+            //     //     //     // pdf.output('dataurlnewwindow');
+            // });
+
+        },
+        computeFilter: function(aux, jobId) {
+            if (aux === 0) {
+                this.clearFilter = 0;
+            } else if (aux === 1) {
+                this.clearFilter = 1;
+            }
+            if (localStorage.bioinfo_eca_filter_history) {
+                var hash = JSON.parse(localStorage.bioinfo_eca_filter_history);
+                this.filters = hash[jobId];
+            }
+            if (this.first === 0 || this.clearFilter === 0) {
+                this.filter = "-No filter used-";
+                this.filterData = this.secData;
+                this.first = 1;
+            } else {
+                this.filter = this.filters[0].name;
+            }
+            this.getSecDataDiv(stv.utils.clone(this.filterData));
+            this._getTable(this._columnsSec, this.filterData, this.$.reportSecondary);
+        },
+        filterDataChanged: function(neo, old) {},
+        getSecDataDiv: function(auxDataFilter) {
+            this.secDataDiv = [];
+            for (var i = 0; i < auxDataFilter.length; i += 10) {
+                this.push('secDataDiv', auxDataFilter.slice(i, 10 + i));
+            }
+        },
+        computeTopSize: function(n) {
+            return 'top: ' + (350 - 25 * n) + 'px';
+        },
+        // getJobPanel: function() {
+        //     var jobPanel = {};
+        //     var panels = this.panelConfig.panels;
+        //     for (var i = 0; i < panels.length; i++) {
+        //         var panel = panels[i];
+        //
+        //         if (this.job.input.indexOf(panel.fileId) >= 0) {
+        //             var panelId = panel.fileId;
+        //             var data;
+        //
+        //             OpencgaManager.files.content({
+        //                 id: panelId,
+        //                 query: {
+        //                     sid: Cookies('bioinfo_sid'),
+        //                     limit: 100
+        //                 },
+        //                 request: {
+        //                     async: false,
+        //                     success: function(response) {
+        //                         data = response;
+        //                     },
+        //                     error: function() {}
+        //                 }
+        //             });
+        //
+        //             if (data) {
+        //                 jobPanel = JSON.parse(data);
+        //             }
+        //         }
+        //     }
+        //
+        //     this.selectedPanel = jobPanel;
+        //     this.panelName = jobPanel.name;
+        //     this.panelVersion = jobPanel.version;
+        //
+        // },
+        geneMapChange: function(neo, old) {
+            // if (this.geneNames != null && this.geneNames.length > 0 && neo != null) {
+            //     var list = [];
+            //     for (var i = 0; i < this.geneNames.length; i++) {
+            //         var key = this.geneNames[i];
+            //         this.push('geneList', {
+            //             gene: key,
+            //             value: neo[key]
+            //         });
+            //         // list[i] = {
+            //         //     gene: key,
+            //         //     value: neo[key]
+            //         // }
+            //     }
+            //     // this.set('geneList',list)
+            //
+            //     // var genListColumns = [{
+            //     //     name: 'gene',
+            //     //     title: 'Gene',
+            //     // }, {
+            //     //     name: 'value',
+            //     //     title: 'Variants Found',
+            //     // }];
+            //
+            //     // this._getTable(genListColumns, dataList, this.$.reportGeneList);
+            // }
+                this._createGenesChart(neo, Object.keys(neo));
+        },
+
+        _getTable: function(columns, data, ref) {
+            var table = ref.querySelector('table');
+            if (table != null) {
+                ref.removeChild(table);
+            }
+            var jsoTable = document.createElement("stv-table");
+            jsoTable.columns = columns;
+            jsoTable.data = data;
+            Polymer.dom(ref).appendChild(jsoTable.exportToTable());
+        },
+        jobChanged: function(neo, old) {
+            var me = this;
+            this.$.genesChart.hidden = true;
+            if (neo.id) {
+                //this.getJobPanel();
+                var inputValues = this.$.reportOptions.querySelectorAll('input');
+                for (i = 0; i < inputValues.length; i++) {
+                    inputValues[i].checked = false;
+                }
+                inputValues[0].checked = true;
+                inputValues[1].checked = true;
+                inputValues[2].checked = true;
+                inputValues[3].checked = true;
+                inputValues[5].checked = true;
+                //inputValues[8].checked = true;
+
+                this.$.reportConclusions.hidden = true;
+                this.$.mostPathogenicResult.hidden = true;
+                this.$.secResult.hidden = true;
+
+                var comments = document.getElementsByClassName('commentsTextArea');
+                comments[0].value = "";
+                comments[1].value = "";
+                this.comDiag = "";
+                this.comSec = "";
+                this.mostPathogenicData = "";
+
+                var tableSec = this.$.reportSecondary.querySelector('table');
+                if (tableSec != null) {
+                    this.$.reportSecondary.removeChild(tableSec);
+                }
+                var tableMost = this.$.reportMostPathogenic.querySelector('table');
+                if (tableMost != null) {
+                    this.$.reportMostPathogenic.removeChild(tableMost);
+                }
+
+                var sampleId = neo.params.sampleId;
+                OpencgaManager.samples.info({
+                    id: sampleId,
+                    query: {
+                        sid: Cookies('bioinfo_sid'),
+                    },
+                    request: {
+                        async: false,
+                        success: function(response) {
+                            me.sample = response.response[0].result[0];
+                        },
+                        error: function() {}
+                    }
+                });
+
+                var desc = this.sample.description;
+
+                this.suspDiag = "";
+                this.$.reportConclusions.querySelector('textarea').value = "";
+
+                elem = this.$.aditional.querySelectorAll('input');
+                for (var i = 0; i < elem.length; i++) {
+                    elem[i].value = "";
+                }
+
+                if (desc != "") {
+                    var information = JSON.parse(desc);
+                    if (information.suspDiag != null) {
+                        this.suspDiag = information.suspDiag;
+                    }
+                    if (information.conclusions != null) {
+                        this.$.reportConclusions.querySelector('textarea').value = information.conclusions;
+                    }
+                    for (var i = 0; i < elem.length; i++) {
+                        var el = elem[i];
+                        var name = el.dataset.name;
+                        if (information[name] != null) {
+                            el.value = information[name];
+                        }
+                    }
+                }
+            }
+        },
+        showInReport: function(e) {
+            var divId = e.currentTarget.value;
+            this.$[divId].hidden = !this.$[divId].hidden;
+        },
+        _getTextInfo: function() {
+            this.divConclusions = this.$.reportConclusions.querySelector('textarea').value;
+            this.$.reportConclusions.querySelector('textarea').hidden = true;
+            this.$.divConclusions.hidden = false;
+
+            elem = this.$.aditional.querySelectorAll('input');
+            for (var i = 0; i < elem.length; i++) {
+                var el = elem[i];
+                var name = el.dataset.name;
+                this[name] = el.value;
+                el.hidden = true;
+                this.$[name].hidden = false;
+
+            }
+            return;
+
+        },
+        _getCommentsInfo: function() {
+            var comments = document.getElementsByClassName('commentsTextArea');
+            this.comDiag = comments[0].value;
+            this.comSec = comments[1].value;
+        },
+        _getMostPathogenic: function(mostPathogenicData) {
+            this._getTable(this._columnsSec, mostPathogenicData, this.$.reportMostPathogenic);
+        },
+        diagDataChange: function(neo, old) {
+            if (neo[0] != null) {
+                this.$.diagResult.hidden = true;
+                this._getTable(this._columnsDiag, neo, this.$.reportDiagnostic);
+            } else {
+                this.$.diagResult.hidden = true;
+                this.$.diagCheck.checked = false;
+                var table = this.$.reportDiagnostic.querySelector('table');
+                if (table != null) {
+                    this.$.reportDiagnostic.removeChild(table);
+                }
+            }
+        },
+        handleSaveReport: function() {
+            var me = this;
+            var infor = {};
+            if (this.sample.description != "") {
+                infor = JSON.parse(this.sample.description);
+            }
+            this.divConclusions = this.$.reportConclusions.querySelector('textarea').value;
+            infor['conclusions'] = this.divConclusions;
+            elem = this.$.aditional.querySelectorAll('input');
+            for (var i = 0; i < elem.length; i++) {
+                var el = elem[i];
+                var name = el.dataset.name;
+                infor[name] = el.value;
+            }
+            var description = JSON.stringify(infor);
+            OpencgaManager.samples.update({
+                id: me.sample.id,
+                query: {
+                    sid: Cookies('bioinfo_sid'),
+                    description: description,
+                    source: me.sample.source,
+                    individualId: me.sample.individualId
+                },
+                request: {
+                    async: false,
+                    success: function(response) {
+                        new StvDialog().alert("The sample aditional information has been saved succesfully.")
+                    },
+                    error: function() {
+
+                    }
+                }
+            });
+        },
+        // exportPanelPDF: function(e) {
+        //     if (Object.keys(this.selectedPanel).length == 0) {
+        //         new StvDialog().alert("No panel selected");
+        //     } else {
+        //         this.$.panelExport.exportPDF(this.selectedPanel);
+        //     }
+        // },
+        _createGenesChart: function(map, gen) {
+            var renderTo = this.$.genesChart;
+            var title = "Number of Variants/GEN";
+            this.$.genesChart.hidden = false;
+
+            var value = [];
+            for (var i = 0; i < gen.length; i++) {
+                var key = gen[i];
+                value[i] = map[key];
+            }
+            var chart = new Highcharts.Chart({
+                chart: {
+                    type: 'column',
+                    renderTo: renderTo,
+                    width: 550
+                },
+                credits: {
+                    enabled: false
+                },
+                pane: {
+                    size: 60
+                },
+                legend: {
+                    enabled: false
+                },
+                title: {
+                    text: title,
+                },
+                xAxis: {
+                    categories: gen,
+                    labels: {
+                        rotation: -45,
+                        style: {
+                            fontSize: '10px',
+                            fontFamily: 'Verdana, sans-serif'
+                        }
+                    },
+                    title: {
+                        text: null
+                    }
+                },
+
+                yAxis: {
+                    title: {
+                        text: 'Variants'
+                    },
+                    min: 0
+                },
+
+                series: [{
+                    name: "Variants",
+                    data: value,
+                }]
+
+            });
+        },
+    });
+</script>

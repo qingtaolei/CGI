@@ -1,0 +1,207 @@
+<dom-module id="eca-result-static-filters">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .filterBut {
+            height: 55px;
+            width: 200px;
+            font-size: 15px;
+            color: #666;
+        }
+
+        .title {
+            /*background-color: #d0d0d0;*/
+            border-bottom: 1px solid #d0d0d0;
+            box-sizing: border-box;
+            height: 20px;
+            font-size: 13px;
+        }
+
+        .title:hover {
+            font-weight: bold;
+            color: #8ba7a7;
+        }
+
+        .but {
+            box-sizing: border-box;
+            text-align: center;
+            line-height: 30px;
+            position: relative;
+            text-decoration: none;
+            width: 200px;
+            background: #e2e9e9;
+        }
+
+        .but::before {
+            background: #e2e9e9;
+            border: none;
+            content: '';
+            display: block;
+            height: 40px;
+            left: 180px;
+            position: absolute;
+            top: 8px;
+            -moz-transform: rotate(45deg);
+            -webkit-transform: rotate(45deg);
+            -o-transform: rotate(45deg);
+            transform: rotate(45deg);
+            width: 40px;
+        }
+
+        .but div {
+            background: none;
+            border: none;
+            /*font-weight: bold;*/
+            position: relative;
+            color: #222;
+            font-size: 14px;
+        }
+
+        stv-btn {
+            position: absolute;
+        }
+    </style>
+    <template>
+        <div id="filters">
+            <div class="but flex filterBut" on-click="handleView" data-value="none">
+                <div class="title">Without Filters</div>
+                <i class="fa fa-filter"></i>
+                <span class="findedGenes">{{data.length}}</span>
+
+            </div>
+             <div class="stv-btn stv-btn-shdw flex filterBut" on-click="handleView" data-value="filterA">
+                <div class="title">A: Most Likely Driver Factors &nbsp;</div>
+                <i class="fa fa-filter" style="color:#b30000"></i>
+                <span class="findedGenes">{{value.md}}</span>
+            </div>
+            <div class="stv-btn stv-btn-shdw flex filterBut" on-click="handleView" data-value="filterB">
+                <div class="title">B: Potentially Driver Factors &nbsp;</div>
+                <i class="fa fa-filter" style="color:#ff751a"></i>
+                <span class="findedGenes">{{value.pd}}</span>
+            </div>
+            <div class="stv-btn stv-btn-shdw flex filterBut" on-click="handleView" data-value="filterC">
+                <div class="title">C: Support Detorious &nbsp;</div>
+                <i class="fa fa-filter" style="color:#005b99"></i>
+                <span class="findedGenes">{{value.sd}}</span>
+            </div>
+            <div class="stv-btn stv-btn-shdw flex filterBut" on-click="handleView" data-value="filterD">
+                <div class="title">D: Likely Benign &nbsp;</div>
+                <i class="fa fa-filter" style="color:#005b99"></i>
+                <span class="findedGenes">{{value.lb}}</span>
+            </div>
+            <div class="stv-btn stv-btn-shdw flex filterBut" on-click="handleView" data-value="filterE">
+                <div class="title">E: Unkown Significance &nbsp;</div>
+                <i class="fa fa-filter" style="color:#008000"></i>
+                <span class="findedGenes">{{value.us}}</span>
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: "eca-result-static-filters",
+        properties: {
+            view: {
+                type: String,
+                value: 'none'
+            },
+            data: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+                notify: true,
+                observer: 'countFilterData'
+            },
+            query: {
+                type: Object,
+                value: function() {
+                    return {};
+                },
+                notify: true,
+            },
+            value: {
+                type: Object,
+                value: function() {
+                    return {};
+                },
+                notify: true,
+            }
+
+        },
+
+        ready: function() {
+            this.countFilterData();
+            var els = this.$.filters.querySelectorAll(".filterBut");
+            for (var i = 0; i < els.length; i++) {
+                var el = els[i];
+                if (el.dataset.value == "none") {
+                    el.classList.add("but");
+                    el.classList.remove("stv-btn", "stv-btn-shdw");
+                } else {
+                    el.classList.remove("but");
+                    el.classList.add("stv-btn", "stv-btn-shdw");
+                }
+            }
+        },
+        handleView: function(e) {
+            var els = this.$.filters.querySelectorAll(".filterBut");
+            for (var i = 0; i < els.length; i++) {
+                var el = els[i];
+                el.classList.remove("but");
+                el.classList.add("stv-btn", "stv-btn-shdw");
+            }
+            e.currentTarget.classList.add("but");
+            e.currentTarget.classList.remove("stv-btn", "stv-btn-shdw");
+
+            var q = {};
+            q["filterView"] = e.currentTarget.dataset.value;
+            this.set('query', q);
+
+        },
+        countFilterData: function() {
+            var md = 0;
+            var pd = 0;
+            var sd = 0;
+            var lb = 0;
+            var us = 0;
+            var  v = {};
+            for (var i = 0; i < this.data.length; i++) {
+                  var patho = this.data[i].patho;
+                /*var sift = this.data[i].sift;
+                var polyphen = this.data[i].polyphen;
+                if (sift <= 0.05 && polyphen >= 0.95) {
+                    mlp += 1;
+                } else if (sift <= 0.05 || polyphen >= 0.95 && (sift != '.' || polyphen != '.')) {
+                    pp += 1;
+                } else if (sift == '.' && polyphen == '.') {
+                    us += 1;
+                } else {
+                    lb += 1;
+                }*/
+                if (patho == "Most Likely Driver Factor") {
+                    md += 1;
+                } else if (patho == "Potential Driver Factor") {
+                    pd += 1;
+                } else if (patho == "Support Driver Factor") {
+                    sd += 1;
+                } else if (patho == "Likely bengin"){
+                    lb += 1;
+                } else {
+                    us += 1;
+                }
+                v["md"] = md;
+                v["pd"] = pd;
+                v["sd"] = sd;
+                v["lb"] = lb;
+                v["us"] = us;
+            }
+            this.set('value', v);
+        }
+
+    });
+</script>

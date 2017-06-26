@@ -1,0 +1,488 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/stevia-elements/src/table/stv-table.html">
+<link rel="import" href="../bower_components/stevia-elements/src/report/stv-report.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<script src="../bower_components/FileSaver.js/FileSaver.js"></script>
+<dom-module id="eca-gene">
+<style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+ :host {
+        display: block;
+        position: relative;
+        box-sizing: border-box;
+        background-color: #FFFFFF;
+        padding: 20px 40px;
+        /*@apply(--layout-horizontal);*/
+    }
+
+     :host[toc-fixed]>#outline {
+        position: fixed;
+    }
+
+    #outline {
+        /*position: fixed;*/
+        position: absolute;
+        box-sizing: border-box;
+        margin-top: 25px;
+        right: 40px;
+        min-width: 300px;
+        max-width: 300px;
+        background-color: white;
+        border: 1px solid var(--divider-color);
+        box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+    }
+
+    #up {
+        position: fixed;
+        box-sizing: border-box;
+        margin-top: -10px;
+        right: 20px;
+    }
+
+    .job-name,
+    .job-desc,
+    .job-tool {
+        margin-left: 40px;
+    }
+
+    .outline-line {
+        padding: 2px;
+        text-transform: capitalize;
+    }
+
+    .outline-line>i {
+        color: var(--accent-color);
+        margin-right: 5px;
+    }
+
+    .section:first-child {
+        margin: 0px 0 5px 0;
+    }
+
+    .section {
+        font-size: 30px;
+        font-weight: lighter;
+        margin: 30px 0 5px 0;
+        color: var(--secondary-text-color);
+        border-bottom: 1px solid var(--divider-color);
+    }
+
+    .download,
+    .param,
+    .image,
+    .table,
+    .boxplot,
+    .message,
+    .redirection {
+        font-size: 18px;
+        display: block;
+    }
+
+    .download>a:hover,
+    .image>a:hover,
+    .boxplot>a:hover,
+    .table>a:hover,
+    .redirection>a:hover {
+        text-decoration: underline;
+    }
+
+    .download>a,
+    .image>a,
+    .boxplot>a,
+    .table>a,
+    .redirection>a {
+        color: var(--secondary-text-color);
+        text-decoration: none;
+    }
+
+    .download>i,
+    .image>i,
+    .table>i,
+    .boxplot>i,
+    .message>i,
+    .redirection>i {
+        color: var(--accent-color);
+        margin-right: 10px;
+    }
+
+    .param>.key {
+        color: var(--secondary-text-color);
+        margin-right: 5px;
+    }
+
+    .param>.val {
+        color: var(--accent-color);
+    }
+
+    .image>img {
+        display: block;
+        margin-bottom: 30px;
+    }
+
+    .table>stv-table {
+        width: 1000px;
+        margin-top: 10px;
+        margin-bottom: 20px;
+        border: 1px solid var(--divider-color);
+        height: 380px;
+    }
+
+    .html {
+        color: var(--secondary-text-color);
+    }
+
+    .section>.name {
+        color: var(--accent-color);
+        margin-right: 10px;
+    }
+
+    .input-param {
+        margin-left: 40px;
+    }
+
+    .download-icon {
+        font-size: 10pt;
+        margin-left: 5px;
+        color: var(--accent-color);
+    }
+
+    .download-icon:hover {
+        cursor: pointer;
+    }
+
+    .download-icon:hover {
+        font-weight: bold;
+    }
+
+    .button {
+        background-color: var(--dark-button-color) !important;
+        color: var(--text-primary-color) !important;
+    }
+
+    .button:hover {
+        background-color: var(--light-button-color) !important;
+    }
+
+    #outlineBottomBar {
+        margin-top: 10px;
+    }
+
+    #outlineBottomBar>i {
+        padding-left: 7px;
+    }
+
+    .delete-job,
+    .download-job,
+    .relaunch-job {
+        cursor: pointer;
+    }
+
+    .delete-job:hover {
+        color: #b30000 !important;
+    }
+
+    .relaunch-job:hover {
+        color: #298c63 !important;
+    }
+
+    .download-job:hover {
+        color: #0068cc !important;
+    }
+
+    .redirection-btn {
+        margin: 10px;
+        max-width: 300px;
+    }
+
+    stv-table{
+      border: 1px solid var(--divider-color);
+      box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.2);
+    }
+}
+</style>
+
+<!--template>
+<iron-ajax
+        auto
+        url="http://localhost/ECADatabase/phpscripts/genesearch.php?gene=TP53"
+        last-response="{{response}}"
+        handle-as="json">
+</iron-ajax>
+
+<template id="dom-repeat" items={{response}}-->
+      <!-- id="outline" class="vertical layout">
+        <div id="outlineContent" class="vertical layout"></div>
+        <div id="outlineBottomBar" class="horizontal layout end-justified">
+            <i class="fa fa-download download-job" title="Download Job" on-click="handleDownloadJob"></i>
+            <i class="fa fa-trash-o delete-job" title="Delete Job" on-click="handleDeleteJob"></i>
+            <i class="fa fa-refresh relaunch-job" title="Relaunch Job" on-click="handleRelaunchJob"></i>
+        </div>
+    </div-->
+<template>
+    <div id="up" on-click="handleUp" class="button stv-btn stv-btn-shdw" title="Go top"><i class="fa fa-arrow-up"></i></div>
+    <div>
+        <div id="jobInfo" class="section">Gene Information</div>
+        <div style="margin-left:30px;">
+            <div class="param"><span class="key">Tumor type:</span><span class="val">{{gene.cancer}}</span></div>
+            <div class="param"><span class="key">Name:</span><span class="val">{{gene.name}}</span></div>
+            <div class="param"><span class="key">Description:</span><span class="val">{{gene.description}}</span></div>
+            <!--div class="param"><span class="key">Number of variants:</span><span class="val">{{gene.varnum}}</span></div-->
+            <div class="param"><span class="key">UCSC Browser:</span><span class="val">{{gene.ucsc}}</span></div>
+            <!--div class="param"><span class="key">Function:</span><span class="val">{{gene.function}}</span></div>
+            <div class="param"><span class="key">Biology:</span><span class="val">{{gene.biology}}</span></div-->
+            <div class="param"><span class="key">Protein family:</span><span class="val">{{gene.family}}</span></div>
+            <div class="param"><span class="key">GeneCard:</span><span class="val"><a href="http://www.genecards.org/Search/Keyword?queryString={{gene.card}}" target="_blank">{{gene.card}}</a></span></div>
+            <div class="param"><span class="key">OMIM:</span><span class="val"><a href="http://www.omim.org/entry/{{gene.omim}}" target="_blank">{{gene.omim}}</a></span></div>
+            <div class="param"><span class="key">COSMIC Gene:</span><span class="val">{{gene.cosmic}}</span></div>
+
+        </div>
+        <div id="jobInfo" class="section">Association with {{gene.cancer}}</div>
+            <div style="margin-left:30px;">
+              <stv-table data="{{datavarsum}}" columns="{{variantsumcolumns}}" enable-resize></stv-table>
+            </div>
+        <div id="inputParamsHeader" class="section">Gene Expression in {{gene.cancer}}</div>
+            <div style="margin-left:30px;">
+              <div class="param"><span class="key">Expression Dataset:</span><span class="val">{{gene.expdiscrip}}</span></div>
+              <img src="{{gene.exp_path}}">
+        <!--div id="inputParams" style="margin-left: 30px;">Dataset information</div-->
+            <br>
+            </div>
+        <div id="jobInfo" class="section">Mutation Survival Information</div>
+            <div style="margin-left:30px;">
+              <div class="param"><span class="key">Survival analysis discription:</span><span class="val"></span></div>
+              <img src="{{gene.mutsurvival}}">
+            </div>
+        <!--div id="jobInfo" class="section">Hipathia pathway analysis</div>
+        <div class="param"><span class="key">Survival analysis discription:</span><span class="val"></span></div>
+        <img src="{{gene.}}"-->
+        <div id="jobInfo" class="section">Involved Pathways</div>
+            <div style="margin-left:30px;">
+              <stv-table data="{{datapathway}}" columns="{{pathwaycolumns}}" enable-paging page-size="20" enable-filter enable-resize></stv-table>
+            </div>
+        <div id="jobInfo" class="section">Mutation Information</div>
+            <div style="margin-left:30px;">
+              <stv-table data="{{datalist}}" columns="{{variantlistcolumns}}" enable-paging page-size="20" enable-filter enable-resize></stv-table>
+            </div>
+    </div>
+    <!-- <div class="section">Results</div> -->
+    <div id="main"></div>
+</template>
+<script>
+    Polymer({
+        is: 'eca-gene',
+        properties: {
+          variantsumcolumns:{
+            type: Array,
+            notify: true,
+            value:[{
+                name: 'SMG',
+                title: 'SMG',
+                width: 50,
+            },
+            {
+                name: 'mutsigPublish',
+                title: 'Published MutSig Results',
+                width: 120
+            },
+            {
+                name: 'mutsigCombind',
+                title: 'Pooled Analsis MutSig',
+                width: 120
+            },
+            {
+                name: 'sampleSize',
+                title: 'Collected Sample Size',
+                width: 120
+            },
+            {
+                name: 'mutationNumb',
+                title: '# of Mutation',
+                width: 100
+            },
+            {
+                name: 'mutationFreq',
+                title: 'Gene Mutation Frequency',
+                width: 120
+            },
+            {
+                name: 'missense',
+                title: 'Missense',
+                width: 50
+            },
+            {
+                name: 'frame_shift_indel',
+                title: 'Frame_shift_indel',
+                width: 120
+            },
+            {
+                name: 'nonsense',
+                title: 'Nonsense',
+                width: 70
+            },
+            {
+                name: 'splicing',
+                title: 'Splicing',
+                width: 50
+            },
+            {
+                name: 'in_frame_indel',
+                title: 'In_frame_indel',
+                width: 120
+            },
+            {
+                name: 'silent',
+                title: 'Silent',
+                width: 50
+            }
+           ]
+          },
+          pathwaycolumns:{
+                type: Array,
+                notify: true,
+                value:[{
+                    name: 'pathname',
+                    title: 'Name',
+                    width: 100
+                },
+                {
+                  name: 'source',
+                  title: 'Source',
+                  width: 100
+                },
+                {
+                  name: 'numbofgene',
+                  title: 'Number of Gene',
+                  width: 150
+                },
+                {
+                  name: 'numbmutatedgene',
+                  title: 'Number of Mutated Gene',
+                  width: 200
+                },
+                {
+                  name: 'numbofpatients',
+                  title: 'Number of Affected Patients',
+                  width: 200
+                },
+                {
+                  name: 'logrankp',
+                  title: 'Log Rank Test P',
+                  width: 150
+                },
+              ]
+          },
+          variantlistcolumns: {
+               type: Array,
+               notify: true,
+               value:[{
+                   name: 'gene',
+                   title: 'Gene',
+                   width: 50
+               },
+               {
+                   name: 'genomechange',
+                   title: 'Genome Change',
+                   width: 130
+               },
+               {
+                   name: 'class',
+                   title: 'Classification',
+                   width: 120
+               },
+               {
+                   name: 'type',
+                   title: 'Type',
+                   width: 50
+               },
+               {
+                   name: 'exon',
+                   title: 'Exon',
+                   width: 50
+               },
+               {
+                   name: 'proteinchange',
+                   title: 'Protein Change',
+                   width: 100
+               },
+               {
+                   name: 'numbfreq',
+                   title: 'Mutation Frequency',
+                   width: 100
+               },
+               {
+                   name: 'numbmutincosmic',
+                   title: 'Number of Alteration in Cosmic',
+                   width: 150
+               },
+               {
+                   name: 'afftissueincosmic',
+                   title: 'Affected Tissues in Cosmic',
+                   width: 200
+               },
+               {
+                   name: 'clinvar',
+                   title: 'ClinVar HGMD',
+                   width: 100
+               },
+               {
+                   name: 'cadd',
+                   title: 'CADD score',
+                   width: 80
+               },
+               {
+                   name: 'numbdamage',
+                   title: 'Protein damage prediction summary',
+                   width: 150
+               }
+               
+             ]
+           },
+           datalist: {
+                type: Array
+            },
+           datapathway: {
+                 type: Array
+             },
+           datavarsum: {
+                 type: Array
+             },
+            gene: {
+                 type: Object,
+                 observer:"geneChanged"
+             }
+        },
+         ready:function (){
+        },
+        geneChanged:function(neo, old){
+          var me=this;
+            if(neo){
+              var url=ECA_DB_HOST+'/varlisttable.php?gene='+this.gene.name;
+              var url1=ECA_DB_HOST+'/varsumtable.php?gene='+this.gene.name;
+              this._doRequest(url, function(response){
+                me.set('datalist', response);
+              });
+              this._doRequest(url1, function(response){
+                me.set('datavarsum', response);
+              });
+            }
+        },
+        _doRequest: function(url, cb) {
+            var me = this;
+            var request = new XMLHttpRequest();
+            request.onload = function() {
+                cb(JSON.parse(this.responseText));
+            };
+            request.onerror = function() {
+                console.log('Error loading remote file');
+            };
+            request.open("GET", url);
+            request.send();
+        },
+        selectedOptionChanged: function(neo, old) {
+            this.$.pathactForm.clean();
+        }
+    })
+</script>
+</dom-module>

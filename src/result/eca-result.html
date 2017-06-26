@@ -1,0 +1,534 @@
+<link rel="import" href="eca-result-overview.html">
+<link rel="import" href="eca-result-diagnostic.html">
+<link rel="import" href="eca-result-pathway.html">
+<link rel="import" href="eca-result-filters.html">
+<link rel="import" href="eca-result-report.html">
+<dom-module id="eca-result">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+         :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            height: 100%;
+            background-color: #fff;
+            overflow-y: scroll;
+        }
+
+        #tabs {
+            border:none;
+            box-shadow: none;
+            /*height: 100%;*/
+        }
+        /*
+        .title {
+            box-sizing: border-box;
+            font-size: 22px;
+            padding: 3px 18px;
+        }*/
+
+        #right {
+            margin-left: 5px;
+            margin-right: 5px;
+            width: 83%;
+        }
+
+        #left {
+            margin: 5px;
+            width: 270px;
+        }
+
+        eca-result-diagnostic {
+            height: 800px;
+        }
+
+        #diagnosticResult {
+            margin: 15px 45px;
+        }
+
+        #secondary {
+            margin: 10px;
+        }
+        /*.value {
+            border: 1px solid #d0d0d0;
+            box-sizing: border-box;
+            height: 20px;
+            font-size: 13px;
+        }*/
+    </style>
+    <template>
+
+        <!-- <stv-tab id="tabs" on-tab-change="handleTabChange"> -->
+        <stv-tab id="tabs">
+            <div class="tab" data-tab="Overview">
+                <eca-result-overview id="ower" job="{{job}}" gene-map="{{geneMap}}" gene-names="{{geneNames}}" diag-data="{{diagData}}" sec-data="{{secData}}" total-data="{{totalData}}" value="{{value}}" diag="{{diag}}" sec="{{sec}}" hidden$="{{!computeView(view, 'overview')}}"></eca-result-overview>
+            </div>
+            <div class="tab" data-tab="Theraputic Drug Targets">
+                <eca-result-diagnostic id="diagnosticResult" data="{{diagData}}" cancer= "{{cancer}}" title="Theraputic Target" type-data="diagnostic"></eca-result-diagnostic>
+            </div>
+            <div class="tab horizontal layout" data-tab="Driver Factors">
+                <div id="left">
+                    <eca-result-filters id="ecaResultFilters" data="{{secData}}" query={{query}} value={{value}} filter-data="{{filterData}}" job="{{job}}"></eca-result-filters>
+                </div>
+                <div id="right" class="flex">
+                    <eca-result-diagnostic id="secResult" data="{{secData}}" query="{{query}}" cancer= "{{cancer}}" title="Variant Outcome" filter-data="{{filterData}}" type-data="secondary"></eca-result-diagnostic>
+
+                </div>
+            </div>
+            <div class="tab" data-tab="Pathways">
+                <eca-result-pathway id="diagnosticResult" data="{{pathwayData}}" cancer= "{{cancer}}" title="Enriched Pathway" type-data="pathway" file-name-map="{{fileNameMap}}"></eca-result-pathway>
+            </div>
+            <div class="tab" data-tab="Report" id="result">
+                <eca-result-report id="ecaResultReport" job="{{job}}" diag-data="{{diagData}}" cancer= "{{cancer}}" sec-data="{{secData}}" total-data="{{totalData}}" value="{{value}}" filter-data="{{filterData}}"  gene-map="{{geneMap}}" gene-names="{{geneNames}}"></eca-result-report>
+            </div>
+        </stv-tab>
+
+
+        <!-- <div class="vertical layout flex">
+            <div id="submenu" class="horizontal layout">
+
+                <div class="tab" on-click="handleView" data-value="overview" data-checked$="{{computeView(view, 'overview')}}">
+                    Overview
+                </div>
+                <div class="tab" on-click="handleView" data-value="diagnostic" data-checked$="{{computeView(view, 'diagnostic')}}">
+                    Theraputic Drug Targets
+                </div>
+                <div class="tab" on-click="handleView" data-value="secondary" data-checked$="{{computeView(view, 'secondary')}}">
+                    Driver Factors
+                </div>
+                <div class="tab" on-click="handleView" data-value="pathway" data-checked$="{{computeView(view, 'pathway')}}">
+                    Pathways
+
+                </div>
+                <div class="tab" on-click="handleView" data-value="report" data-checked$="{{computeView(view, 'report')}}">
+                    Report
+                </div>
+                <div class="tab flex" style="cursor:default">
+
+                </div>
+            </div> -->
+
+
+        <!-- <div class="vertical layout" hidden$="{{!computeView(view, 'diagnostic')}}">
+                <eca-result-diagnostic id="diagnosticResult" data="{{diagData}}" title="Theraputic Target" type-data="diagnostic"></eca-result-diagnostic>
+            </div> -->
+        <!-- <div id="secondary" class="horizontal layout" hidden$="{{!computeView(view, 'secondary')}}">
+                <div id="left">
+                    <eca-result-filters id="ecaResultFilters" data="{{secData}}" query={{query}} value={{value}} filter-data="{{filterData}}" job="{{job}}"></eca-result-filters>
+                </div>
+                <div id="right" class="flex">
+                    <eca-result-diagnostic id="secResult" data="{{secData}}" query="{{query}}" title="Variant Outcome" filter-data="{{filterData}}" type-data="secondary"></eca-result-diagnostic>
+
+                </div>
+            </div>
+            <div class="vertical layout" hidden$="{{!computeView(view, 'pathway')}}">
+                <eca-result-pathway id="diagnosticResult" data="{{pathwayData}}" title="Enriched Pathway" type-data="pathway" file-name-map="{{fileNameMap}}"></eca-result-pathway>
+            </div>
+            <div hidden$="{{!computeView(view, 'report')}}" id="result">
+                <eca-result-report id="ecaResultReport" job="{{job}}" diag-data="{{diagData}}" sec-data="{{secData}}" total-data="{{totalData}}" value="{{value}}" filter-data="{{filterData}}" panel-config="{{panelConfig}}" gene-map="{{geneMap}}" gene-names="{{geneNames}}"></eca-result-report>
+
+            </div> -->
+
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'eca-result',
+            properties: {
+                job: {
+                    type: Object,
+                    observer: 'jobChanged'
+                },
+                fileNameMap: {
+                    type: Object
+                },
+                url: {
+                    type: String,
+                    notify: true,
+                    value: ''
+                },
+                file: {
+                    type: Object
+                },
+                selectedMenuTool: {
+                    type: Object,
+                    observer: 'selectedMenuChanged'
+                },
+                query: {
+                    type: Object,
+                    notify: true,
+                    oberver: 'queryChanged'
+                },
+                cancer: {
+                  type: Object,
+                  notify: true
+                },
+
+                // job: {
+                //     type: Object,
+                //    value: function() {
+                //        return {};
+                //    },
+                //    observer: 'jobChanged',
+                //    notify: true
+                // },
+                diagData: {
+                    type: Array,
+                    value: function() {
+                        return [];
+                    }
+                },
+                secData: {
+                    type: Array,
+                    value: function() {
+                        return [];
+                    }
+                },
+                pathwayData: {
+                    type: Array,
+                    value: function() {
+                        return [];
+                    }
+                },
+                diagRaw: {
+                    type: Array,
+                    observer: 'diagRawChanged'
+                },
+                secRaw: {
+                    type: Array,
+                    observer: 'secRawChanged'
+                },
+                pathwayRaw: {
+                    type: Array,
+                    observer: 'pathwayChanged'
+                },
+                sigpathNumb: {
+                    type: Number
+                },
+                view: {
+                    type: String,
+                    value: 'overview'
+                },
+                value: {
+                    type: Object,
+                    value: function() {
+                        return {};
+                    },
+                    notify: true,
+                    observer: "valueChanged"
+                },
+                filterData: {
+                    type: Array,
+                    value: function() {
+                        return [];
+                    },
+                    notify: true,
+                    observer: "filterDataChanged"
+                },
+                jobId: {
+                    type: Number,
+                    value: function() {
+                        return [];
+                    }
+                },
+                panelConfig: {
+                    type: Object,
+                    value: function() {
+                        return {};
+                    },
+                    notify: true
+                },
+                geneMap: {
+                    type: Object,
+                    observer: "geneMapChange"
+                },
+                geneNames: {
+                    type: Array,
+                    observer: "geneNamesChange"
+                }
+            },
+            created: function() {},
+            ready: function() {
+              var me = this;
+            },
+            jobChanged: function(neo, old) {
+                var me = this;
+                if (neo) {
+                    SteviaManager.getPlainFolderFiles(me.job.folder._id, function(files) {
+                        me._createFilePathMap(files);
+                        me.set('diag',me.getFileFromName('DrugTarget.txt'));
+                        me.set('sec',me.getFileFromName('mafAnnotation.txt'));
+                        me.set('cancer', me.job.description);
+                        // SteviaManager.getFileContent(me.getFileFromName('cancer.txt')._id, function(content) {
+                        //     var nodes = me._parseTabularFile(content);
+                        //     //console.log(nodes);
+                        //     me.set('cancerRaw', nodes);
+                        // });
+                        SteviaManager.getFileContent(me.getFileFromName('DrugTarget.txt')._id, function(content) {
+                            var nodes = me._parseTabularFile(content);
+                            //console.log(nodes);
+                            me.set('diagRaw', nodes);
+                        });
+                        SteviaManager.getFileContent(me.getFileFromName('mafAnnotation.txt')._id, function(content) {
+                            var nodes = me._parseTabularFile(content);
+                            //console.log(nodes);
+                            me.set('secRaw', nodes);
+                        });
+                        SteviaManager.getFileContent(me.getFileFromName('enrichedPathway.txt')._id, function(content) {
+                            var nodes = me._parseTabularFile(content);
+                            //console.log(nodes);
+                            me.set('pathwayRaw', nodes);
+                        });
+
+                    });
+                }
+            },
+            _createFilePathMap: function(files) {
+                var fileNameMap = {};
+                var jobRelativePath;
+                for (var i = 0; i < files.length; i++) {
+                    var f = files[i];
+                    if (this.job.folder._id != f._id) {
+                        jobRelativePath = f.path.replace(this.job.folder.path + '/', '');
+                        fileNameMap[jobRelativePath] = f;
+                    }
+                }
+                this.set('fileNameMap', fileNameMap);
+            },
+            getFileFromName: function(name) {
+                var file = this.fileNameMap[name];
+                if (file != null) {
+                    return file;
+                }
+            },
+            geneMapChange: function(neo, old) {},
+            geneNamesChange: function(neo, old) {},
+            // cancerRawChanged: function(neo, old) {
+            //   var me = this;
+            //   if (neo != null) {
+            //     var diag = this.diagRaw;
+            //     var diagData = [];
+            //     if (diag.data[i] != "") {
+            //         var splits = diag.data[i];
+            //         me.set("cancer",splits['cancer']);
+            //     }
+            //   }
+            // },
+            diagRawChanged: function(neo, old) {
+                var me = this;
+                if (neo != null) {
+                    this.view = 'overview';
+                    var diag = this.diagRaw;
+                    var diagData = [];
+
+                    for (var i = 0; i < diag.data.length; i++) {
+                      //debugger
+                        if (diag.data[i] != "") {
+                            var splits = diag.data[i];
+                            if (isNaN(splits['Chromosome'])) {
+                                splits['Chromosome'] = splits['Chromosome'];
+                            } else {
+                                splits['Chromosome'] = parseInt(splits['Chromosome'].toString());
+                            }
+                            if (isNaN(splits['Start_position'])) {
+                                splits['Start_position'] = splits['Start_position'];
+                            } else {
+                                splits['Start_position'] = parseInt(splits['Start_position'].toString());
+                            }
+
+                            var elem = {
+                                drugtarget: splits["TargetTherapyDrug"],
+                                drug: splits["Drugs"],
+                                instruction: splits["Implications_for_Targeted_Therapeutics"],
+                                //patho: splits["PathoClassification"],
+                                //numbdamage: splits["NumberOfPredDamage"],
+                                //numbbenign: splits["NumberOfPredBenign"],
+                                //logrankp: splits["ESCC_ALL_Log_Rank_Pvalue"],
+                                //SMG_q: splits["ESCC_Mutsig_qvalue"],
+                                //mutnumb: splits["ESCC_Mutation_Numb"],
+                                //freq: splits["ESCC_Mutation_Frequency"],
+                                gene: splits["Hugo_Symbol"],
+                                chr: splits["Chromosome"],
+                                pos: splits["Start_position"],
+                                ref: splits["Reference_Allele"],
+                                type: splits["Variant_Classification"],
+                                alt: splits["Tumor_Seq_Allele2"],
+                                gchange: splits["Genome_Change"],
+                                pchange: splits["Protein_Change"],
+                                omim: splits["HGNC_OMIM ID(supplied by NCBI)"],
+                                ucsc: splits["HGNC_UCSC ID(supplied by UCSC)"],
+                                numbcosmic: splits["COSMIC_total_alterations_in_gene"],
+                                mutsigother: splits["MUTSIG_Published_Results"],
+                                cadd: splits["dbNSFP_CADD_phred"],
+                                clinvarhgmd: splits["ClinVar_HGMD_ID"],
+                                maf1000GP1: splits["dbNSFP_1000Gp1_AC"],
+                                esp6500: splits["dbNSFP_ESP6500_EA_AF"],
+                                aesp6500: splits["dbNSFP_ESP6500_AA_AF"]
+                            };
+                            diagData.push(elem);
+                            //debugger
+                        }
+                    };
+                    //debugger
+                    this.set('diagData', diagData);
+                }
+            },
+            secRawChanged: function(neo, old) {
+                var me = this;
+                if (neo != null) {
+                    this.view = 'overview';
+                    var sec = this.secRaw;
+                    var secData = [];
+
+                    for (var i = 1; i < sec.data.length; i++) {
+                        if (sec.data[i] != "") {
+                            var splits = sec.data[i];
+                            if (isNaN(splits['Chromosome'])) {
+                                splits['Chromosome'] = splits['Chromosome'];
+                            } else {
+                                splits['Chromosome'] = parseInt(splits['Chromosome'].toString());
+                            }
+                            if (isNaN(splits['Start_position'])) {
+                                splits['Start_position'] = splits['Start_position'];
+                            } else {
+                                splits['Start_position'] = parseInt(splits['Start_position'].toString());
+                            }
+
+                            var elem = {
+                                patho: splits["PathoClassification"],
+                                numbdamage: splits["NumberOfPredDamage"],
+                                numbbenign: splits["NumberOfPredBenign"],
+                                logrankp: splits["ALL_Log_Rank_Pvalue"],
+                                SMG_q: splits["Mutsig_qvalue"],
+                                mutnumb: splits["Mutation_Numb"],
+                                freq: splits["Mutation_Frequency"],
+                                gene: splits["Hugo_Symbol"],
+                                chr: splits["Chromosome"],
+                                pos: splits["Start_position"],
+                                ref: splits["Reference_Allele"],
+                                type: splits["Variant_Classification"],
+                                alt: splits["Tumor_Seq_Allele2"],
+                                gchange: splits["Genome_Change"],
+                                pchange: splits["Protein_Change"],
+                                omim: splits["HGNC_OMIM ID(supplied by NCBI)"],
+                                ucsc: splits["HGNC_UCSC ID(supplied by UCSC)"],
+                                numbcosmic: splits["COSMIC_total_alterations_in_gene"],
+                                mutsigother: splits["MUTSIG_Published_Results"],
+                                cadd: splits["dbNSFP_CADD_phred"],
+                                clinvarhgmd: splits["ClinVar_HGMD_ID"],
+                                maf1000GP1: splits["dbNSFP_1000Gp1_AC"],
+                                esp6500: splits["dbNSFP_ESP6500_EA_AF"],
+                                aesp6500: splits["dbNSFP_ESP6500_AA_AF"]
+                            };
+                            secData.push(elem);
+                        }
+                    };
+
+                    this.set('secData', secData);
+                    this.totalData = secData.length + this.diagData.length;
+                }
+            },
+            pathwayChanged: function(neo, old) {
+                var me = this;
+                if (neo != null) {
+                    this.view = 'overview';
+                    var pathway = this.pathwayRaw;
+                    var pathwayData = [];
+                    var sigPath = 0;
+                    for (var i = 1; i < pathway.data.length; i++) {
+                        if (pathway.data[i] != "") {
+                            var splits = pathway.data[i];
+                            var elem = {
+                                pathwayid: splits["PathwayID"],
+                                pathwayname: splits["PathwayName"],
+                                numbofgeneaffacted: splits["NumberOfGeneAffacted"],
+                                totalgeneinpathway: splits["TotalGeneinPathway"],
+                                pathenrichpvalue: splits["PathwayEnrichedPvalue"],
+                                logrankpvalue: splits["SurvivalPvalueinCancer"],
+                                pathwaymutatedrate: splits["PathwayMutatedRate"]
+                            };
+                            if(splits["PathwayEnrichedPvalue"] < 0.05){
+                              sigPath++;
+                            }
+                            pathwayData.push(elem);
+                        }
+                    };
+                  //  this.set("sigpathNumb",sigPath);
+                    //this.sigpathNumb= sigPath;
+                    this.$.ower.sigpathNumb=sigPath;
+                    //console.log(this.sigpathNumb)
+                    this.set('pathwayData', pathwayData);
+                }
+            },
+            _parseTabularFile: function(textContent) {
+                var lines = textContent.split('\n');
+                if (lines.length > 0) {
+                    var line, fields, field, data = [],
+                        columns = [],
+                        obj;
+
+                    // if (lines[0].charAt(0) == '#') {
+                    var firstLine = lines[0].replace('#', '');
+                    fields = firstLine.split('\t');
+                    for (var i = 0; i < fields.length; i++) {
+                        field = fields[i];
+                        field = field.trim();
+                        var name = field.replace(/ /gi, '_');
+                        var width = 150;
+                        if (i === 0) {
+                            width = 400;
+                        }
+                        columns.push({
+                            name: name,
+                            title: name.replace('path', 'circuit'),
+                            width: width
+                        });
+                    }
+                    if (columns.length > 0) {
+                        for (var i = 1; i < lines.length; i++) {
+                            line = lines[i];
+                            if (line != '' && line.charAt(0) != '#') {
+                                fields = line.split('\t');
+                                obj = {};
+                                for (var j = 0; j < fields.length; j++) {
+                                    field = fields[j].trim();
+                                    if (window.isNaN != null && !isNaN(field)) {
+                                        field = parseFloat(parseFloat(field).toFixed(3));
+                                    }
+                                    column = columns[j];
+
+                                    obj[column.name] = field;
+                                }
+                                data.push(obj);
+                            }
+                        }
+                    }
+                    return {
+                        columns: columns,
+                        data: data
+                    };
+                }
+            },
+            queryChanged: function(neo, old) {
+
+            },
+            handleView: function(e) {
+                this.view = e.target.dataset.value;
+                if (this.view == 'report') {
+                //  debugger
+                    this.$.ecaResultReport.computeFilter(2, this.jobId);
+                    this.$.ecaResultReport._getCommentsInfo();
+
+                }
+                if (this.view == 'secondary') {
+                    this.$.ecaResultFilters.initialWhenJobChanges();
+                }
+            },
+            computeView: function(view, value) {
+                return view === value;
+            },
+            valueChanged: function(neo, old) {},
+            filterDataChanged: function(neo, old) {},
+
+        })
+    </script>
+</dom-module>

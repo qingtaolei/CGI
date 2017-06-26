@@ -1,0 +1,432 @@
+<!-- <link rel="import" href="../../bower_components/jsorolla/src/lib/components/opencga/jso-opencga-manager-behavior.html"> -->
+<dom-module id="eca-result-overview">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            margin: 20px;
+        }
+
+        #overview {
+            padding: 10px;
+            border: 1px solid #d0d0d0;
+            width:60%;
+            /*height: 780px;*/
+            margin: 0 auto;
+        }
+
+        #name {
+            font-size: 20px;
+            color: #445D76;
+        }
+
+        #description {
+            font-size: 18px;
+            color: #445D76;
+            margin-left: 20px;
+        }
+
+        #stadistics {
+            margin-top: 10px;
+            font-size: 15px;
+            color: #737373;
+        }
+
+        .numbers {
+            color: black;
+        }
+
+        .chart {
+            height: 280px;
+            padding: 10px;
+            /*border: 1px solid #d0d0d0;*/
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+        #genesChart,
+        #consTypeChart,
+        #qualChart {
+            width: 80%;
+        }
+
+        #filterChart {
+            width: 50%
+        }
+
+        .down {
+            color: #445D76;
+            margin: 10px;
+            /*padding-left: 10px;*/
+            width: 50%;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+    </style>
+    <template>
+        <div id="overview">
+            <ul>
+                <strong>
+                    <div id="name">{{job.name}}</div>
+                </strong>
+
+                <div id="description">Cancer Type: {{job.description}}</div>
+
+                <ul id="stadistics">
+                    <div>Total Variants: &nbsp;
+                        <span class="numbers">{{totalData}}</span>
+                    </div>
+                    <div>Theraputic Targets: &nbsp;
+                        <span class="numbers">{{diagData.length}}</span>
+                    </div>
+                    <div>Other Variants: &nbsp;
+                        <span class="numbers">{{secData.length}}</span>
+                    </div>
+                    <div>Significantly Enriched Pathways: &nbsp;
+                        <span class="numbers">{{sigpathNumb}}</span>
+                    </div>
+                </ul>
+                <div class="horizontal layout">
+                    <div id="filterChart" class="chart" hidden>
+                    </div>
+                    <div class="vertical layout" style="width:50%">
+
+                        <div class="stv-btn stv-btn-shdw down" on-click="downloadFiles" title="Download Files" data-file="{{diag}}">
+                            <i class="fa fa-cloud-download"></i> &nbsp; Download Theraputic Target File
+                        </div>
+                        <div class="stv-btn stv-btn-shdw down" on-click="downloadFiles" title="Download Files" data-file="{{sec}}">
+                            <i class="fa fa-cloud-download"></i> &nbsp; Download Somatic Mutation Annotation File
+                        </div>
+                    </div>
+                </div>
+                <div id="genesChart" class="chart" hidden>
+                </div>
+                <div id="consTypeChart" class="chart" hidden>
+                </div>
+                <!--div id="qualChart" class="chart" hidden>
+                </div>
+                <div id="depthChart" class="chart" hidden-->
+                </div>
+            </ul>
+
+        </div>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: "eca-result-overview",
+        //behaviors: [JsoOpencgaManagerBehavior],
+        properties: {
+            job: {
+                type: Object,
+                value: function() {
+                    return {};
+                },
+            },
+            diagData: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
+            },
+            secData: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+                observer: 'secDataChange'
+            },
+            totalData: {
+                type: Number,
+                value: "",
+            },
+            cancer: {
+                type: Object,
+                value: ""
+            },
+            sigpathNumb: {
+                type: Number,
+                value: ""
+            },
+            value: {
+                type: Object,
+                observer: 'valueChange'
+            },
+            geneMap:{
+              type: Object,
+              notify:true
+            },
+            geneNames:{
+              type: Array,
+              notify:true
+            }
+        },
+        ready: function() {
+          var me =this;
+          console.log(this.sigpathNumb)
+        },
+        _createFilterChart: function(value) {
+            this.$.filterChart.hidden = false;
+
+            var chart = new Highcharts.Chart({
+                chart: {
+                    type: 'column',
+                    renderTo: this.$.filterChart,
+                    width: 350
+                },
+                pane: {
+                    size: 60
+                },
+                credits: {
+                    enabled: false
+                },
+                legend: {
+                    enabled: false
+                },
+                title: {
+                    text: "Somatic Mutation Classifications",
+                },
+                xAxis: {
+                    type: 'category'
+                },
+
+                yAxis: {
+                    title: {
+                        text: 'Finded Genes'
+                    },
+                    min: 0
+                },
+                plotOptions: {
+                    series: {
+                        borderWidth: 0,
+                        dataLabels: {
+                            enabled: true,
+                        }
+                    }
+                },
+
+                series: [{
+                    name: "Somatic mutation classifications",
+                    colorByPoint: true,
+                    data: [{
+                        name: 'A: Most Likely Driver Factor',
+                        y: value.md,
+                        color: '#b30000'
+                    }, {
+                        name: 'B: Potentially Driver Factor',
+                        y: value.pd,
+                        color: '#ff751a'
+                    }, {
+                        name: 'C: Support Detorious',
+                        y: value.sd,
+                        color: '#005b99'
+                    }, {
+                        name: 'D: Likely Benign',
+                        y: value.lb,
+                        color: '#008000'
+                    }, {
+                        name: 'E: Unkown Significance',
+                        y: value.us,
+                        color: '#008001'
+                    }]
+                }]
+
+            });
+        },
+        _createGenesChart: function(map, gen, op) {
+
+            if (op === "gene") {
+                var renderTo = this.$.genesChart;
+                var title = "Number of Variants/Genes";
+                this.$.genesChart.hidden = false;
+            } else if (op === "ct") {
+                var renderTo = this.$.consTypeChart;
+                var title = "Number of Classification Type";
+                this.$.consTypeChart.hidden = false;
+            }
+            var value = [];
+            for (var i = 0; i < gen.length; i++) {
+                var key = gen[i];
+                value[i] = map[key];
+            }
+            var chart = new Highcharts.Chart({
+                chart: {
+                    type: 'column',
+                    renderTo: renderTo,
+                    width: 550
+                },
+                credits: {
+                    enabled: false
+                },
+                pane: {
+                    size: 60
+                },
+                legend: {
+                    enabled: false
+                },
+                title: {
+                    text: title,
+                },
+                xAxis: {
+                    categories: gen,
+                    labels: {
+                        rotation: -45,
+                        style: {
+                            fontSize: '10px',
+                            fontFamily: 'Verdana, sans-serif'
+                        }
+                    },
+                    title: {
+                        text: null
+                    }
+                },
+
+                yAxis: {
+                    title: {
+                        text: 'Variants'
+                    },
+                    min: 0
+                },
+
+                series: [{
+                    name: "Variants",
+                    data: value,
+                }]
+
+            });
+        },
+        valueChange: function(neo, old) {
+            this.$.filterChart.hidden = true;
+            if (this.value.md != null) {
+                this._createFilterChart(this.value);
+            }
+        },
+        secDataChange: function(neo, old) {
+            this.$.genesChart.hidden = true;
+            this.$.consTypeChart.hidden = true;
+            //this.$.qualChart.hidden = true;
+            //this.$.depthChart.hidden = true;
+            this._getMapForChart(neo, "gene");
+            //this._getMapForChart(neo, "type");
+            //this._getIntervalData(neo, "qual");
+            //this._getIntervalData(neo, "dp");
+        },
+        downloadFiles: function(e) {
+          //debugger
+            var fileId = e.currentTarget.dataFile._id;
+              SteviaManager.downloadFile(fileId);
+        },
+        _getMapForChart: function(neo, option) {
+            var map = {};
+            var value = "";
+            var valueNames = [];
+            var n = 0;
+            for (var i = 0; i < neo.length; i++) {
+                var opts = neo[i];
+                opts = opts[option].split(',');
+                for (var j = 0; j < opts.length; j++) {
+                    value = opts[j];
+                    if (map[value] == null) {
+                        map[value] = 1;
+                        valueNames[n] = value;
+                        n++;
+                    } else {
+                        map[value]++;
+
+                    }
+                }
+            }
+            if (option=="gene") {
+              this.set("geneNames",valueNames.sort());
+              this.set("geneMap", map);
+            }
+            if (map[value] != null) {
+                this._createGenesChart(map, valueNames.sort(), option);
+            }
+
+        },
+        /*_getIntervalData: function(neo, option) {
+            var qualValues = [];
+            var qualInterval = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            for (var i = 0; i < neo.length; i++) {
+                var d = neo[i];
+                if (!isNaN(d[option])) {
+                    qualValues[i] = d[option];
+                }
+            }
+            if (qualValues[0]) {
+                var start = Math.min.apply(null, qualValues);
+                var end = Math.max.apply(null, qualValues);
+                var step = Math.round((end - start) / 9);
+                for (var i = 0; i < qualValues.length; i++) {
+                    var value = Math.floor(qualValues[i] / step);
+                    qualInterval[value]++;
+
+                }
+                var categories = [0 + "-" + step, step + "-" + step * 2, step * 2 + "-" + step * 3, step * 3 + "-" + step * 4, step * 4 + "-" + step * 5, step * 5 + "-" + step * 6,
+                    step * 6 + "-" + step * 7, step * 7 + "-" + step * 8, step * 8 + "-" + step * 9, step * 9 + "-" + step * 10
+                ];
+                this._createQualChart(qualInterval, categories, option);
+            }
+        },
+        _createQualChart: function(data, categories, op) {
+            if (op === "qual") {
+                var renderTo = this.$.qualChart;
+                var title = "Qual/Variants";
+                var axisName= "Qual";
+                this.$.qualChart.hidden = false;
+            } else if (op === "dp") {
+                var renderTo = this.$.depthChart;
+                var title = "Depth/Variants";
+                var axisName= "Depth";
+                this.$.depthChart.hidden = false;
+            }
+
+            var chart = new Highcharts.Chart({
+                chart: {
+                    type: 'column',
+                    renderTo: renderTo,
+                    width: 550
+                },
+                credits: {
+                    enabled: false
+                },
+                pane: {
+                    size: 60
+                },
+                legend: {
+                    enabled: false
+                },
+                title: {
+                    text: title,
+                },
+                xAxis: {
+                    categories: categories,
+                    labels: {
+                        style: {
+                            fontSize: '10px',
+                            fontFamily: 'Verdana, sans-serif'
+                        }
+                    },
+                    title: {
+                        text: axisName,
+                    }
+                },
+
+                yAxis: {
+                    title: {
+                        text: 'Nº of Variants'
+                    },
+                    min: 0
+                },
+
+                series: [{
+                    name: "Variants",
+                    data: data,
+                }]
+
+            });
+        },*/
+    });
+</script>

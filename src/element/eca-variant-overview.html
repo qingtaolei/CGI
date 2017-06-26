@@ -1,0 +1,149 @@
+<link rel="import" href="../../bower_components/stevia-elements/src/table/stv-table.html">
+<dom-module id="eca-variant-overview">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            width: 100%;
+        }
+        stv-table {
+            height: 200px;
+            width: 1300px;
+            border: 1px solid #d0d0d0;
+        }
+
+        stv-table::shadow .table-row {
+            height: 25px;
+        }
+
+        stv-table::shadow,
+        jso-variant-frequencies-grid::shadow stv-table::shadow {
+            font-size: 11px;
+        }
+
+        stv-table::shadow .table-pager > input {
+            width: 1600px !important;
+        }
+        #legend {
+            margin: 0 auto;
+            width: 50%;
+        }
+    </style>
+    <template>
+        <div class="horizontal layout">
+            <div id="overview" on-rowclick="handleRowClick">
+            </div>
+            <div style="margin-left:30px;">
+            <stv-table data="{{variantoverview}}" columns="{{variantoverviewcolumns}}" enable-resize></stv-table>
+              <!-- <div id="legend">
+                  <i class="fa fa-lightbulb-o" aria-hidden="true" style="font-size:16px;color:#32b0cd"></i>
+                  <br>- All values are normalized between zero and one.
+                  <br>- Values closest to one are deleterious and closest to zero are benign.
+                  <br>- Polyphen and Sift are opposed, but in this case, Sift has been calculated as 1 - Sift.
+              </div> -->
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'eca-variant-overview',
+            properties: {
+                row: {
+                    type: Object,
+                    observer: 'rowChanged'
+                },
+                // params: {
+                //     type: Array,
+                //     value: function() {
+                //         return [];
+                //     }
+                // },
+                variantsum: {
+                      type: Array
+                },
+                variantoverviewcolumns:{
+                  type: Array,
+                  notify: true,
+                  value:[{
+                      name: 'variant',
+                      title: 'Variant',
+                      width: 180,
+                  },
+                  {
+                      name: 'numbmut',
+                      title: 'Number of Mutation',
+                      width: 130
+                  },
+                  {
+                      name: 'numbpatients',
+                      title: 'Total Patients in Cohort',
+                      width: 150
+                  },
+                  {
+                      name: 'mutfreq',
+                      title: 'Mutation Freqency',
+                      width: 120
+                  },
+                  {
+                      name: 'cadd',
+                      title: 'CADD',
+                      width: 80
+                  },
+                  {
+                      name: 'mutationassessor',
+                      title: 'Mutation Assessor',
+                      width: 120
+                  },
+                  {
+                      name: 'fathmm',
+                      title: 'FATHMM',
+                      width: 150
+                  },
+                  {
+                      name: 'lrt',
+                      title: 'LRT',
+                      width: 80
+                  },
+                  {
+                      name: 'mutationtester',
+                      title: 'Mutation Taster',
+                      width: 120
+                  },
+                  {
+                      name: 'polyphen2',
+                      title: 'Polyphen2',
+                      width: 80
+                  },
+                  {
+                      name: 'sift',
+                      title: 'SIFT',
+                      width: 60
+                  }]
+                },
+            },
+            rowChanged: function(neo, old) {
+                if (neo) {
+                    var me = this;
+
+                    var variant = neo.chromosome + "|" + neo.start + "|" + neo.reference + "|" + neo.alternate;
+                     var url=ECA_DB_HOST+'/variantoverview.php?variant=' + variant;
+                         this._doRequest(url, function(response){
+                         me.set('variantoverview', response);
+                    });
+                }
+            },
+            _doRequest: function(url, cb) {
+                var me = this;
+                var request = new XMLHttpRequest();
+                request.onload = function() {
+                    cb(JSON.parse(this.responseText));
+                };
+                request.onerror = function() {
+                    console.log('Error loading remote file');
+                };
+                request.open("GET", url);
+                request.send();
+            },
+      })
+    </script>
+</dom-module>

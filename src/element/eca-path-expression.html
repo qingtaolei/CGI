@@ -1,0 +1,144 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<dom-module id="eca-gene-expression">
+    <style is="custom-style"
+           include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            width: 100%;
+        }
+
+        stv-table {
+            box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
+            overflow-y: hidden;
+        }
+
+        stv-table::shadow #list {
+            min-height: 200px;
+        }
+
+        stv-table::shadow {
+            font-size: 11px;
+        }
+
+        stv-table::shadow .table-row {
+            height: 25px;
+        }
+
+        stv-table::shadow .table-header-field > .name.stv-table {
+            padding: 4px 0;
+        }
+
+        #mafChart {
+            border: 1px solid rgba(125, 125, 125, 0.4);
+            box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
+            margin: 0 auto;
+            overflow-x: auto;
+            height: 350px;
+        }
+
+    </style>
+    <template>
+        <div hidden$="{{isEmpty}}" class="horizontal layout wrap center-justified">
+            <!-- <stv-table id="table" enable-export enable-paging></stv-table> -->
+            <div id="mafChart" hidden></div>
+        </div>
+        <div hidden$="{{!isEmpty}}" style="padding:20px 50px;">
+            No frequencies found.
+        </div>
+
+        <div class="horizontal layout">
+            <div hidden$="{{isEmpty}}" style="padding:120px 150px;">
+                <img src="{{geneexpression}}" style="height: 104px;margin: 8px 3px 0 0;">
+            </div>
+            <div id="legend" hidden$="{{isEmpty}}">
+                    <i class="fa fa-lightbulb-o" aria-hidden="true" style="font-size:16px;color:#32b0cd"></i>
+                    <br>- All values are normalized between zero and one.
+                    <br>- Values closest to one are deleterious and closest to zero are benign.
+                    <br>- Polyphen and Sift are opposed, but in this case, Sift has been calculated as 1 - Sift.
+            </div>
+            <div hidden$="{{!isEmpty}}" style="padding:20px 50px;">
+                No survival information found.
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: 'eca-gene-expression',
+        properties: {
+            row: {
+                type: Object,
+                observer: 'rowChanged'
+            },
+            isEmpty: {
+                value: false,
+                type: Boolean
+            }
+        },
+        ready: function () {
+            //this.$.table.columns = this._columns;
+        },
+        // _columns: [{
+        //     name: "study",
+        //     title: "Study",
+        //     width: 150
+        // }, {
+        //     name: "population",
+        //     title: "Population",
+        //     width: 150
+        // }, {
+        //     name: "refAllele",
+        //     title: "Ref. Allele",
+        //     width: 50
+        // }, {
+        //     name: "altAllele",
+        //     title: "Alt. Allele",
+        //     width: 50
+        // }, {
+        //     name: "refAlleleFreq",
+        //     title: "Ref. Allele Freq.",
+        //     cellTemplate: 'alleleFreqCT',
+        //     formula: function (row) {
+        //         var val = ".";
+        //         if (row.refAlleleFreq != null) {
+        //             val = row.refAlleleFreq.toFixed(3);
+        //         }
+        //         return val;
+        //     },
+        //     width: 70
+        // }, {
+        //     name: "altAlleleFreq",
+        //     title: "Alt. Allele Freq.",
+        //     formula: function (row) {
+        //         var val = ".";
+        //         if (row.altAlleleFreq != null) {
+        //             val = row.altAlleleFreq.toFixed(3);
+        //         }
+        //         return val;
+        //     },
+        //     width: 70
+        // }, {
+        //     name: "maf",
+        //     title: "MAF",
+        //     formula: function (row) {
+        //         return Math.min(row.refAlleleFreq, row.altAlleleFreq).toFixed(3);
+        //     },
+        //     width: 70
+        // }],
+        rowChanged: function (neo, old) {
+            var me = this;
+            if (neo) {
+                var geneexpression = "ECAData/ESCC/geneExp/" + neo.gene + "_Dateset1.png";
+                    SteviaManager.getFileByPath(geneexpression, function(content,geneexpression) {
+                       if(content){
+                         me.set("geneexpression",geneexpression);
+                         me.isEmpty = true;
+                       }else{
+                         me.isEmpty = false;
+                       }
+                    });
+             }
+        }
+    });
+</script>

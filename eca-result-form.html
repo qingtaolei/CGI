@@ -1,0 +1,844 @@
+<link rel="import" href="../../bower_components/stevia-elements/src/filter/stv-filter-position.html">
+<link rel="import" href="../../bower_components/stevia-elements/src/filter/stv-filter-scores.html">
+<link rel="import" href="../../bower_components/stevia-elements/src/filter/stv-filter-conservation.html">
+<link rel="import" href="../../bower_components/stevia-elements/src/filter/stv-filter-consequencetypes.html">
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+<dom-module id="eca-result-form">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            width: 250px;
+        }
+
+        #filter_form {
+            overflow-y: auto;
+            height: 100%;
+            margin: 0px;
+        }
+
+        .title {
+            font-size: 22px;
+            border-bottom: thin solid #edebe3;
+            margin: 7px 5px;
+        }
+
+        #bar {
+            padding: 0 3px 5px 0;
+        }
+
+        #bar > .stv-btn {
+            margin: 0px 2px;
+        }
+
+        .input_container {
+            margin: 0px;
+            width: 175px;
+            right: auto;
+            top: 0px;
+            left: 5px;
+            padding: 4px 6px 3px 20px;
+        }
+
+        .input_container label {
+            padding-bottom: 5px;
+            padding-left: 1px;
+        }
+
+        #headerTitle {
+            background: #e4e7e9;
+            font-size: 16px;
+            line-height: 22px;
+            margin: 10px;
+            padding: 5px;
+        }
+
+        .segregation.sampleName {
+            width: 70px;
+        }
+
+        input.segregation,
+        .segregationValue {
+            margin-left: 3px;
+        }
+
+        input#consequence_type {
+            width: 30px;
+        }
+
+        #consequenceTypes {
+            height: 400px;
+            overflow-y: auto;
+        }
+
+        textarea {
+            resize: none;
+            width: 100%;
+        }
+
+        .maf-elem,
+        .qual-elem,
+        .pss-elem,
+        .conserv-elem {
+            margin-bottom: 3px;
+        }
+        /*.qual-elem {
+            width: 95%;
+        }*/
+
+        .maf-elem > label,
+        .qual-elem > label,
+        .pss-elem > label,
+        .conserv-elem > label {
+            width: 60px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .maf-elem > .stv-select,
+        .pss-elem > .stv-select,
+        .conserv-elem > .stv-select,
+        .qual-elem > .stv-select {
+            width: 45px;
+            margin-right: 3px;
+            align-self: center;
+        }
+
+        #filter-name {
+            text-overflow: ellipsis;
+            width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .tit {
+            margin-top: 10px;
+            border-bottom: 1px solid #445D76;
+            font-weight: bold;
+        }
+
+        .name {
+            width: 300px;
+        }
+
+        .num {
+            width: 100px;
+        }
+
+        .clear-but {
+            width: 100px;
+            background-color: #f0f4f4 !important;
+        }
+
+        stv-tooltip::shadow #messageInfo::shadow {
+            height: 300px;
+            width: 500px;
+            background-color: #e2e9e9;
+            border: 1px solid #e2e9e9;
+            color: black;
+            font-style: normal;
+        }
+
+        stv-tooltip::shadow .closeInfo::shadow {
+            margin-left: 490px;
+        }
+
+        #filterHistoryTable > div:hover {
+            background-color: #8ba7a7;
+            border: 1px solid #8ba7a7;
+        }
+
+        #customFiltersForm {
+            height: 700px;
+            overflow-y: auto;
+        }
+
+        .inputValue {
+            width: 150px;
+        }
+
+        .butstyle {
+            border-radius: 4px;
+            width: 100px;
+            background-color: var(--dark-button-color) !important;
+            color: var(--text-primary-color) !important;
+        }
+
+        .butstyle:hover {
+            background-color: var(--light-button-color) !important;
+        }
+
+        #filterHistoryTooltip {
+            border-radius: 4px;
+            background-color: var(--dark-button-color) !important;
+            color: var(--text-primary-color) !important;
+        }
+
+        #filterHistoryTooltip:hover {
+            background: var(--accent-color) !important;
+        }
+
+        .numFilter {
+            /*padding: 1px 7px;*/
+            background-color: #445D76;
+            border-radius: 50%;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+            margin-left: 10px;
+            margin-top: 2px;
+            line-height: 20px;
+            height: 20px;
+            width: 20px;
+            text-align: center;
+        }
+
+        paper-slider.sliderBar {
+            color: #a0a0a0;
+            --paper-slider-knob-color: #445D76;
+            --paper-slider-active-color: #445D76;
+            --paper-slider-pin-color: #445D76;
+            --paper-input-container-focus-color: #445D76;
+            width: 125%;
+        }
+
+        paper-slider::shadow #input {
+            width: calc(20vh - 40px);
+            font-size: 13px;
+        }
+    </style>
+    <template>
+        <form id="filter_form">
+            <div id="bar" class="horizontal layout">
+                <stv-tooltip id="filterHistoryTooltip" class="stv-btn stv-btn-shdw" title="Filters History" icon="filter">
+                    <div class="stv-btn stv-btn-shdw clear-but" title="Clear Filters History" on-click="clearFiltersHistory">
+                        Clear
+                    </div>
+                    <div class="horizontal layout flex">
+                        <span class="tit num"> Date </span>
+                        <span class="name tit"> Name </span>
+                        <span class="tit num"> Found</span>
+                    </div>
+                    <div id="filterHistoryTable">
+                        <template is="dom-repeat" items="{{historyFilters}}">
+                            <div class="horizontal layout flex" on-click="loadFilter" data-filter="{{item.filter}}" title="{{item.name}}">
+                                <span class="num">{{item.date}} </span>
+                                <span id="filter-name" class="name">{{item.name}} </span>
+                                <span class="num">{{item.found}}</span>
+                            </div>
+                        </template>
+                    </div>
+                </stv-tooltip>
+                <div class="stv-btn stv-btn-shdw flex butstyle" on-click="clearForm">Clear</div>
+                <div class="stv-btn stv-btn-shdw flex butstyle" on-click="submitForm">Search</div>
+            </div>
+            <div id="customFiltersForm">
+                <!--qt--stv-filter-position id="filterPosition" collapsible enable-snpid></stv-filter-position-->
+                <stv-form-box collapsible collapsed>
+                    <div class="header">
+                        MutSig q value.
+                    </div>
+                    <div class="container vertical layout">
+                        <label class="jso">MutSig</label>
+
+                        <div class="horizontal layout maf-elem">
+                            <div class="stv-select">
+                                <stv-select class="jso" name="SMG_q_op" id="SMG_q_op">
+                                    <stv-option value="<" selected>
+                                        < </stv-option>
+                                            <stv-option value="<=">
+                                                <=</stv-option>
+                                                    <stv-option value=">">></stv-option>
+                                                    <stv-option value=">=">>=</stv-option>
+                                </stv-select>
+                            </div>
+                            <paper-slider pin min="0" max="1" step="0.0000001" on-value-change="sliderChange" value="0" class="sliderBar" id="SMG_q" editable></paper-slider>
+
+                        </div>
+                    </div>
+                </stv-form-box>
+
+                <stv-form-box collapsible collapsed>
+                    <div class="header">
+                        Variant Type
+                    </div>
+                    <div class="container vertical layout">
+                        <label class="stv-control horizontal layout" style="margin-bottom:2px;">
+                            <input value="missense" type="checkbox" name="gt">
+                            <span class="flex">Missense</span>
+                            <span class="numFilter">{{numMissense}}</span>
+                        </label>
+
+                        <label class="stv-control horizontal layout" style="margin-top:2px;">
+                            <input value="frameindel" type="checkbox" name="gt">
+                            <span class="flex">Frameshift Indels</span>
+                            <span class="numFilter">{{numFrameshift}}</span>
+                        </label>
+
+                        <label class="stv-control horizontal layout" style="margin-top:2px;">
+                            <input value="nonsense" type="checkbox" name="gt">
+                            <span class="flex">Nonsense</span>
+                            <span class="numFilter">{{numNonsense}}</span>
+                        </label>
+
+                        <label class="stv-control horizontal layout" style="margin-top:2px;">
+                            <input value="utr" type="checkbox" name="gt">
+                            <span class="flex">UTR</span>
+                            <span class="numFilter">{{numUTR}}</span>
+                        </label>
+
+                        <label class="stv-control horizontal layout" style="margin-top:2px;">
+                            <input value="other" type="checkbox" name="gt">
+                            <span class="flex">Other</span>
+                            <span class="numFilter">{{numOther}}</span>
+                        </label>
+                    </div>
+                </stv-form-box>
+
+
+                <stv-form-box collapsible collapsed>
+                    <div class="header">
+                        Clinical Survival
+                    </div>
+                    <div class="container vertical layout">
+                        <label class="jso">Log Rank p</label>
+                        <div class="horizontal layout qual-elem">
+                            <div class="stv-select">
+                                <stv-select class="jso" name="logrankp_op" id="logrankp_op">
+                                    <stv-option value="<">
+                                        < </stv-option>
+                                            <stv-option value="<=">
+                                                <=</stv-option>
+                                                    <stv-option value=">" selected>></stv-option>
+                                                    <stv-option value=">=">>=</stv-option>
+                                </stv-select>
+                            </div>
+                            <paper-slider pin step=1 min="0" max="1" on-value-change="sliderChange" value="0.05" class="sliderBar" id="logrankp" editable></paper-slider>
+                        </div>
+
+                        <div class="horizontal layout" style="line-height: 20px;">
+                            <label class="jso">Metastatic p value </label>
+                        </div>
+                        <div class="horizontal layout qual-elem">
+                            <div class="stv-select">
+                                <stv-select class="jso" name="metastasis_op" id="metastasis_op">
+                                    <stv-option value="<">
+                                        < </stv-option>
+                                            <stv-option value="<=">
+                                                <=</stv-option>
+                                                    <stv-option value=">" selected>></stv-option>
+                                                    <stv-option value=">=">>=</stv-option>
+                                </stv-select>
+                            </div>
+                            <paper-slider pin step=1 min="0" max="200000" on-value-change="sliderChange" value="100000" class="sliderBar" id="" editable></paper-slider>
+                        </div>
+                    </div>
+                </stv-form-box>
+                <stv-filter-scores id="filterScores" collapsible collapsed></stv-filter-scores>
+                <!--stv-filter-conservation id="filterConservation" collapsible collapsed></stv-filter-conservation-->
+              <stv-filter-consequencetypes id="filterCT" collapsible collapsed data="{{data}}" enable-result></stv-filter-consequencetypes
+            </div>
+        </form>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: "eca-result-form",
+        properties: {
+            url: {
+                type: String,
+                notify: true,
+                value: ''
+            },
+            file: {
+                type: Object,
+                observer: 'fileChanged'
+            },
+            regionValue: {
+                type: String,
+                notify: true,
+                value: ''
+            },
+            geneValue: {
+                type: String,
+                notify: true,
+                value: '',
+            },
+            /*snpIdValue: {
+                type: String,
+                notify: true,
+                value: ''
+            },*/
+            fileName: {
+                type: String,
+                notify: true,
+                value: 'Choose file...'
+            },
+            consequenceTypes: {
+                type: Array,
+                value: function() {
+                    return CONSEQUENCE_TYPES;
+                }
+            },
+            query: {
+                type: Object,
+                value: function() {
+                    return {};
+                },
+                notify: true,
+            },
+            damageValue: {
+                type: Number,
+            },
+            benignValue: {
+                type: Number,
+            },
+            logrankpValue: {
+                type: Number,
+            },
+            SMG_qValue: {
+                type: Number,
+            },
+            mutnumbValue: {
+                type: Number,
+            },
+            freqValue: {
+                type: Number,
+            },
+            numbcosmicValue: {
+                type: Number,
+            },
+            caddValue: {
+                type: Number,
+            },
+            historyFilters: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+                notify: true,
+
+            },
+            hash: {
+                type: Object,
+                value: function() {
+                    return {};
+                },
+            },
+            filterData: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+                notify: true,
+                observer: "filterDataChanged"
+            },
+            data: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+                observer: "dataChanged"
+            },
+            job: {
+                type: Object,
+                value: function() {
+                    return {};
+                },
+                observer: 'jobChanged',
+            },
+            jobId: {
+                type: Number,
+                value: 0
+
+            }
+        },
+
+        ready: function() {
+            if (localStorage.bioinfo_eca_filter_history) {
+                this.hash = JSON.parse(localStorage.bioinfo_eca_filter_history);
+                if (Array.isArray(this.hash)) {
+                    localStorage.bioinfo_eca_filter_history = "";
+                    this.hash = {};
+                }
+            }
+        },
+
+        fileChanged: function(neo, old) {
+            if (neo) {
+                //                this.clearForm();
+                //                this.submitForm();
+            }
+        },
+        handleFeatureSelected: function(e) {
+            var item = e.detail;
+            if (item) {
+                var values = this.$.gene.value.split(',').filter(function(el) {
+                    return el.length != 0
+                });
+                values.push(item.name);
+                values = values.filter(function(item, index, inputArray) {
+                    return inputArray.indexOf(item) == index;
+                });
+                this.$.gene.value = values.join(",");
+            }
+        },
+        clearForm: function() {
+            this.$.filterPosition.clear();
+            this.$.filterScores.clear();
+            //this.$.filterConservation.clear();
+            this.$.filterCT.clear();
+            ////
+            this.$.damage.value = 0;
+            this.damageValue = "";
+            this.$.damage_op.value = "<";
+            this.$.benign.value = 0;
+            this.benignValue = "";
+            this.$.benign_op.value = "<";
+            this.$.logrankp.value = 0;
+            this.logrankpValue = "";
+            this.$.logrankp_op.value = "<";
+            this.$.SMG_q.value = 0;
+            this.SMG_qValue = "";
+            this.$.SMG_q_op.value = "<";
+            this.$.freq.value = 0;
+            this.freqValue = "";
+            this.$.freq_op.value = "<";
+            this.$.numbcosmic.value = 0;
+            this.numbcosmicValue = "";
+            this.$.numbcosmic_op.value = "<";
+            this.$.cadd.value = 0;
+            this.caddValue = "";
+            this.$.cadd_op.value = "<";
+            var gts = this.$.filter_form.querySelectorAll("input[name='gt']:checked");
+            for (var i = 0; i < gts.length; i++) {
+                var el = gts[i];
+                el.checked = false;
+            }
+            this.submitForm();
+            document.getElementById('ecaResultReport').computeFilter(0, this.jobId);
+        },
+        submitForm: function() {
+            var hash = {};
+            var q = {};
+
+            var regionQuery = this.$.filterPosition.checkRegion();
+            if (regionQuery == -1) {
+                return;
+            } else if (regionQuery != null) {
+                q["region"] = regionQuery;
+            }
+
+            var geneQuery = this.$.filterPosition.checkGene();
+            if (geneQuery != null) {
+                q["gene"] = geneQuery;
+            }
+
+            var damage = this.$.filterScores.checkDamage();
+            if (damage == -1) {
+                return;
+            } else if (damage != null) {
+                q["damage"] = damage;
+            }
+
+            var cadd = this.$.filterScores.checkCADD();
+            if (cadd == -1) {
+                return;
+            } else if (cadd != null) {
+                q["cadd"] = cadd;
+            }
+
+            var logrank = this.$.filterScores.checkLogRank();
+            if (logrank == -1) {
+                return;
+            } else if (logrank != null) {
+                q["logrank"] = logrank;
+            }
+
+            var SMG_q = this.$.filterScores.checkSMG_q();
+            if (SMG_q == -1) {
+                return;
+            } else if (SMG_q != null) {
+                q["SMG_q"] = SMG_q;
+            }
+
+            var freq = this.$.filterScores.checkfreq();
+            if (freq == -1) {
+                return;
+            } else if (freq != null) {
+                q["freq"] = freq;
+            }
+
+            var numbcosmic = this.$.filterScores.checknumbcosmic();
+            if (numbcosmic == -1) {
+                return;
+            } else if (numbcosmic != null) {
+                q["numbcosmic"] = numbcosmic;
+            }
+            /*var phastcons = this.$.filterConservation.checkPhastcons(2);
+            if (phastcons != null) {
+                q["phastcons"] = phastcons;
+            }
+            var gerp = this.$.filterConservation.checkGerp();
+            if (gerp != null) {
+                q["gerp"] = gerp;
+            }
+
+            var phylop = this.$.filterConservation.checkPhylop(2);
+            if (phylop != null) {
+                q["phylop"] = phylop;
+            }*/
+
+            var cts = this.$.filterCT.checkConsequenceTypes(2);
+            if (cts != null) {
+                q["annot-ct"] = cts.join(",");
+            }
+
+            var gts = this.$.filter_form.querySelectorAll("input[name='gt']:checked");
+            if (gts.length == 1) {
+                var gt = gts[0];
+                q["gt"] = gt.value;
+            }
+            if (this.damageValue) {
+                q["damage"] = parseFloat(this.damageValue);
+                q["damage_op"] = this.$.damage_op.value;
+            }
+            if (this.logrankpValue) {
+                q["logrankp"] = parseFloat(this.logrankpValue);
+                q["logrankp_op"] = this.$.logrankp_op.value;
+            }
+            if (this.SMG_qValue) {
+                q["SMG_q"] = parseFloat(this.SMG_qValue);
+                q["SMG_q_op"] = this.$.SMG_op.value;
+            }
+            if (this.freqValue) {
+                q["freq"] = parseFloat(this.freqValue);
+                q["freq_op"] = this.$.freq_op.value;
+            }
+            if (this.numbcosmic) {
+                q["numbcosmic"] = parseFloat(this.numbcosmic);
+                q["numbcosmic_op"] = this.$.numbcosmic_op.value;
+            }
+            this.set('query', q);
+
+            var filterHistory = [];
+            if (this.jobId in this.hash) {
+                filterHistory = this.hash[this.jobId];
+            }
+            this.set("historyFilters", filterHistory);
+
+            var newFilter = JSON.stringify(q);
+            var _load = -1;
+            for (var i = 0; i < this.historyFilters.length && _load == -1; i++) { // Check if the fitler has been selected from the history
+                var elem = this.historyFilters[i];
+                if (elem != null) {
+                    var oldFilter = JSON.stringify(this.historyFilters[i].filter);
+                    if (newFilter == oldFilter) {
+                        _load = i;
+                    }
+                }
+            }
+
+            if (_load == -1) { // This filter is new (has not been selected from the history)
+                if (q.region != null || q.gene != null || q.cadd != null || q.damage != null || q.logrank != null || q.SMG_q != null || q.freq != null || q.numbcosmic != null || q["annot-ct"] != null || q["gt"] != null) {
+                    var dateAux = new Date();
+                    var minAux = dateAux.getMinutes();
+                    if (minAux < 10) {
+                        minAux = "0" + minAux;
+                    }
+                    var date = dateAux.getDate() + '/' + (dateAux.getMonth() + 1) + ' ' + dateAux.getHours() + ':' + minAux;
+                    name = this.loadForm(q);
+                    var found = this.filterData.length;
+                    var hf = {};
+                    hf = {
+                        date: date,
+                        name: name,
+                        filter: q,
+                        found: found
+                    };
+
+                    var filters = new FilterHistory(5, filterHistory);
+                    filters.unshift(hf);
+                    this.set("historyFilters", filters);
+                    this.hash[this.jobId] = this.historyFilters;
+
+                    localStorage.bioinfo_eca_filter_history = JSON.stringify(this.hash);
+                }
+            } else { // HistoryFilter contains this filter. We need to change the date and push to top
+                var pos = _load;
+
+                var filters = new FilterHistory(5, this.historyFilters);
+                var filter = filters[pos];
+                var dateAux = new Date();
+                var minAux = dateAux.getMinutes();
+                if (minAux < 10) {
+                    minAux = "0" + minAux;
+                }
+                var date = dateAux.getDate() + '/' + (dateAux.getMonth() + 1) + ' ' + dateAux.getHours() + ':' + minAux;
+
+                filter.date = date;
+
+                var aux = filters[pos];
+                filters[pos] = filters[0];
+                filters[0] = aux;
+
+                this.set("historyFilters", filters);
+                this.hash[this.jobId] = this.historyFilters;
+
+                localStorage.bioinfo_eca_filter_history = JSON.stringify(this.hash);
+
+            }
+            if (q.region != null || q.gene != null || q.cadd != null || q.damage != null || q.logrank != null || q.SMG_q != null || q.freq != null || q.numbcosmic != null || q["annot-ct"] != null || q["gt"] != null) {
+                document.getElementById('ecaResultReport').computeFilter(1, this.jobId);
+            }
+        },
+
+        loadForm: function(hf) {
+            var filterName = [];
+
+            var fP = this.$.filterPosition.load(hf);
+            if (fP.length > 0) {
+                for (var i = 0; i < fP.length; i++) {
+                    filterName.push(fP[i]);
+                }
+            }
+
+            var fS = this.$.filterScores.load(hf);
+            if (fS.length > 0) {
+                for (var i = 0; i < fS.length; i++) {
+                    filterName.push(fS[i]);
+                }
+            }
+            /*
+            var fC = this.$.filterConservation.load(hf, 2);
+            if (fC.length > 0) {
+                for (var i = 0; i < fC.length; i++) {
+                    filterName.push(fC[i]);
+                }
+            }
+            var fCg = this.$.filterConservation.loadGerp(hf);
+            if (fCg != "") {
+                filterName.push(fCg);
+            }
+            */
+            var fCT = this.$.filterCT.load(hf, 2);
+            if (fCT.length > 0) {
+                for (var i = 0; i < fCT.length; i++) {
+                    filterName.push(fCT[i]);
+                }
+            }
+
+            if (hf.gt != null) {
+                var value = hf.gt;
+                var gts = this.$.filter_form.querySelectorAll("input[name='gt']");
+                for (var i = 0; i < gts.length; i++) {
+                    var el = gts[i];
+                    if (el.value == hf.gt) {
+                        el.checked = true;
+                    } else {
+                        el.checked = false;
+                    }
+                }
+
+                filterName.push("GT=" + hf.gt + " ");
+            }
+
+            if (hf.dp != null) {
+                this.dpValue = hf.dp;
+                this.$.dp.value = hf.dp;
+                this.$.dp_op.value = hf.dp_op;
+                filterName.push("DP " + hf.dp_op + " " + hf.dp + " ");
+            }
+            if (hf.qual != null) {
+                this.qualValue = hf.qual;
+                this.$.qual.value = hf.qual;
+                this.$.qual_op.value = hf.qual_op;
+                filterName.push("Qual " + hf.qual_op + " " + hf.qual + " ");
+            }
+            if (hf.maf1000GP3 != null) {
+                this.maf1000GP3Value = hf.maf1000GP3;
+                this.$.maf1000GP3.value = hf.maf1000GP3;
+                this.$.maf1000GP3_op.value = hf.maf1000GP3_op;
+                filterName.push("MAF 1000GP3 " + hf.maf1000GP3_op + " " + hf.maf1000GP3 + " ");
+            }
+            if (hf.esp6500 != null) {
+                this.esp6500Value = hf.esp6500;
+                this.$.esp6500.value = hf.esp6500;
+                this.$.esp6500_op.value = hf.esp6500_op;
+                filterName.push("ESP 6500 " + hf.esp6500_op + " " + hf.esp6500 + " ");
+            }
+            if (hf.spanishmaf != null) {
+                this.spanishmafValue = hf.spanishmaf;
+                this.$.spanishmaf.value = hf.spanishmaf;
+                this.$.spanishmaf_op.value = hf.spanishmaf_op;
+                filterName.push("Spanish MAF " + hf.spanishmaf_op + " " + hf.spanishmaf + " ");
+            }
+            if (hf.mafEXAC != null) {
+                this.mafEXACValue = hf.mafEXAC;
+                this.$.mafEXAC.value = hf.mafEXAC;
+                this.$.mafEXAC_op.value = hf.mafEXAC_op;
+                filterName.push("EXAC " + hf.mafEXAC_op + " " + hf.mafEXAC + " ");
+            }
+
+            return filterName.join(" AND ");
+        },
+        filterDataChanged: function(neo, old) {},
+        loadFilter: function(e) {
+            e.stopPropagation();
+            this.clearForm();
+            this.loadForm(e.currentTarget.dataFilter);
+            this.$.filterHistoryTooltip.handleClose(e);
+            this.submitForm();
+
+        },
+        clearFiltersHistory: function(e) {
+            e.stopPropagation();
+            this.historyFilters = [];
+            delete(this.hash[this.job.id]);
+            localStorage.bioinfo_eca_filter_history = JSON.stringify(this.hash);
+
+        },
+        jobChanged: function(neo, old) {
+            this.set('jobId', neo.id);
+            if (this.jobId) {
+                this.clearForm();
+            }
+        },
+        dataChanged: function(neo, old) {
+            if (neo.length > 0) {
+                var het = 0;
+                var hom = 0;
+                for (var i = 0; i < neo.length; i++) {
+                    var splits = neo[i].gt.split(/[|\/]/);
+                    if (splits[0] == splits[1]) {
+                        hom++;
+                    } else {
+                        het++;
+                    }
+
+                     for (var j = 0; j < neo[i].ct.length; j++) {
+                         var ct = neo[i].ct[j].split(",");
+                         for (var k = 0; k < this.consequenceTypes.length; k++) {
+                             if (this.consequenceTypes[k].name == ct[j]) {
+                                 if (this.consequenceTypes[k].num == null) {
+                                     this.consequenceTypes[k].num = 1;
+                                 } else {
+                                     this.consequenceTypes[k].num++;
+                                 }
+                             }
+                         }
+                     }
+                }
+                 //this.set('consequenceTypes',this.consequenceTypes);
+
+                this.numHeterozygous = het;
+                this.numHomozygous = hom;
+            }
+        },
+        sliderChange: function(e) {
+            var id = e.currentTarget.id + "Value";
+            this.set(id, e.currentTarget.value);
+        },
+    });
+</script>

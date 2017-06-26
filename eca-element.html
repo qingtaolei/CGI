@@ -1,0 +1,452 @@
+<script src="bower_components/stevia-elements/src/manager/stevia-manager.js"></script>
+
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<!--qt--link rel="import" href="bower_components/paper-dropdown-menu/paper-dropdown-menu.html"-->
+
+<script src="bower_components/cookies-js/dist/cookies.min.js"></script>
+<script src="bower_components/crypto-js/core.js"></script>
+<script src="bower_components/crypto-js/sha1.js"></script>
+<script src="bower_components/stevia-elements/src/utils/utils.js"></script>
+<script src="conf/utils.js"></script>
+
+<!-- <link rel="import" href="bower_components/jsorolla/src/lib/components/jso-genome-viewer-element.html"> -->
+<!-- <link rel="import" href="bower_components/jsorolla/src/lib/components/opencga/jso-opencga-header.html"> -->
+
+<link rel="import" href="bower_components/stevia-elements/src/stv-header.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-application-behavior.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-footer.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-select.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-select-box.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-panel.html">
+<link rel="import" href="bower_components/stevia-elements/src/dropdown/stv-dropdown.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-feedback.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-search.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-tooltip.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-launcher/stv-launcher.html">
+
+<link rel="import" href="bower_components/stevia-elements/src/table/stv-table.html">
+<link rel="import" href="bower_components/stevia-elements/src/form/stv-file-origin.html">
+<link rel="import" href="bower_components/stevia-elements/src/file/stv-file-browser.html">
+<link rel="import" href="bower_components/stevia-elements/src/job/stv-job-browser.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-cluster-status.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-tab.html">
+
+<!-- <link rel="import" href="bower_components/stevia-elements/src/report/stv-report.html"> -->
+
+
+<!--link rel="import" href="src/application-home.html">
+<link rel="import" href="src/application-form.html"-->
+<link rel="import" href="eca-element.html">
+<link rel="import" href="src/eca-home.html">
+<!--link rel="import" href="src/eca-escc-main.html"-->
+<!--link rel="import" href="src/eca-ea-main.html"-->
+<link rel="import" href="src/eca-gene.html">
+<!--link rel="import" href="src/viewer/pathact-viewer.html"-->
+<link rel="import" href="src/eca-analysis-form.html">
+<link rel="import" href="src/eca-form.html">
+<link rel="import" href="src/result/eca-result.html">
+<link rel="import" href="src/element/eca-gene-expression.html">
+<link rel="import" href="src/element/eca-gene-survival.html">
+<link rel="import" href="src/element/eca-variant-overview.html">
+
+<dom-module id="eca-element">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+         :host {
+            display: block;
+            position: relative;
+            cursor: default;
+            font-size: 13px;
+            background-color: var(--default-primary-color);
+            height: 100%;
+            width: 100%;
+        }
+
+        stv-header {
+            position: absolute;
+            top: 0;
+        }
+
+        stv-footer {
+            position: absolute;
+            bottom: 0;
+        }
+
+        .content {
+            position: absolute;
+            width: 100%;
+            top: 60px;
+            /*height: calc(100vh - 60px);*/
+            /*background-color: transparent;*/
+        }
+
+        #fileBrowserPanel {
+            position: absolute;
+            top: 0px;
+            left: 0;
+            width: 600px;
+            height: 400px;
+            min-width: 600px;
+            min-height: 400px;
+        }
+
+        #jobBrowserPanel {
+            position: absolute;
+            top: 0px;
+            right: 0;
+            width: 600px;
+            height: 400px;
+            min-width: 600px;
+            min-height: 400px;
+        }
+
+        #fileBrowser {}
+
+        #jobBrowser {}
+
+        @media (max-width: 1100px) {
+            .option-text {
+                display: none;
+            }
+        }
+
+        .userid {
+            color: var(--accent-color);
+            font-size: 16px;
+        }
+
+        #description {
+            color: var(--accent-color);
+            font-weight: normal;
+        }
+
+        .tooltip {
+            display: inline;
+            position: relative;
+        }
+
+        .tooltip:hover:after {
+            background: rgba(0, 0, 0, .8);
+            box-shadow: 0px 0px 6px 3px rgba(0, 0, 0, 0.30);
+            bottom: 100%;
+            color: #fff;
+            content: attr(data-title);
+            left: 0;
+            padding: 10px 15px;
+            position: absolute;
+            z-index: 98;
+            width: 220px;
+        }
+
+        .maf-elem>.stv-select,
+        .pss-elem>.stv-select,
+        .conserv-elem>.stv-select,
+        .qual-elem>.stv-select {
+            width: 90px;
+            margin-right: 3px;
+            align-self: center;
+            font-size: inherit;
+            font-family: inherit;
+            color: black;
+            white-space: nowrap;
+        }
+
+        eca-home {
+            height: calc(100vh - 160px);
+            overflow-y: auto;
+        }
+
+        eca-form,
+        eca-result {
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+    </style>
+    <template>
+
+        <div class="content" menu-option="home">
+            <!-- <eca-home id="home" on-start="handleHomeStart" isLogged="{{isLogged}}"></eca-home> -->
+            <eca-home id="home"  on-start="annonymousLogin" isLogged="{{isLogged}}"></eca-home>
+        </div>
+        <div class="content" menu-option="form">
+            <eca-analysis-form id="home" selectedOption="{{selectedOption}}" bioformats="{{bioformats}}" user-data="{{userData}}" allowed-tools="{{allowedTools}}" on-jobselect="handleJobSelect" on-need-refresh="handleUserNeedRefresh"></eca-analysis-form>
+        </div>
+        <!-- <div class="content" menu-option="ESCC">
+            <eca-escc-main id="home" on-start="handleHomeStart" isLogged="{{isLogged}}"></eca-escc-main>
+        </div>
+        <div class="content" menu-option="ECA">
+            <eca-ea-main id="home" on-start="handleHomeStart" isLogged="{{isLogged}}"></eca-ea-main>
+        </div> -->
+        <!-- <div class="content" menu-option="gene">
+            <eca-gene id="ecaGene" gene="{{gene}}" on-start="handleHomeStart" isLogged="{{isLogged}}"></eca-gene>
+        </div> -->
+        <div id="jobContent" class="content" menu-option="job">
+            <!-- <stv-report id="report"></stv-report> -->
+            <eca-result id="report"></eca-result>
+        </div>
+        <div class="content" menu-option="home,form,job">
+            <stv-panel id="fileBrowserPanel" hidden collapsible movable closable expandible resizable>
+                <div class="header">
+                    <i class="fa fa-cloud"></i>&nbsp; Browse my data
+                </div>
+                <stv-file-browser id="fileBrowser" class="container flex" on-fileselect="handleFileSelect" bioformats="{{bioformats}}" on-need-refresh="handleUserNeedRefresh" user-data="{{userData}}">
+                </stv-file-browser>
+            </stv-panel>
+            <stv-panel id="jobBrowserPanel" hidden collapsible movable closable resizable>
+                <div class="header">
+                    <i class="fa fa-flask"></i>&nbsp; Browse my jobs
+                </div>
+                <stv-job-browser id="jobBrowser" class="container flex" on-jobselect="handleJobSelect" allowed-tools="{{allowedTools}}" on-need-refresh="handleUserNeedRefresh" user-data="{{userData}}" disable-relaunch="{{disableRelaunch}}" hide-status-filter="{{hideStatusFilter}}" hide-tool-filter="{{hideToolFilter}}">
+                </stv-job-browser>
+            </stv-panel>
+            <stv-feedback id="feedback" hidden on-feedbackend="handleFeedback"></stv-feedback>
+        </div>
+
+
+        <stv-header id="stvHeader" hide-jobs hide-browse selected-option="{{selectedOption}}" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout">
+            <!--div class="icon">
+                <img src="images/Leaf_icon_03.svg" style="height: 54px;margin: 8px 3px 0 0;">
+            </div-->
+            <div class="title horizontal layout center" style="margin-left:15px;">
+                <span style="font-weight:normal;">IDMICG</span>&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
+            <span id="description" class="description">
+
+            </span>
+
+            <div id="menu" class="menu horizontal layout center flex">
+                <!-- <div class="flex"></div> -->
+
+                <!--div title="" class="option" on-click="handleMenuOption" data-option="home">
+                    <i class="fa fa-magic"></i>
+                    <span class="option-text">Home</span>
+                </div-->
+                <!--div title="ESCC gene view" class="option" on-click="handleMenuOption" data-option="ESCC">
+                    <i class="fa fa-magic"></i>
+                    <span class="option-text">ESCC</span>
+                </div>
+                <div title="EC gene view" class="option" on-click="handleMenuOption" data-option="ECA">
+                    <i class="fa fa-magic"></i>
+                    <span class="option-text">EC</span>
+                </div-->
+
+                <!--div style="margin-left:4vw;"></div-->
+                <!--div title="Select cancer type" style="background-color:black; width:100px; height:25px;" class="option"-->
+                <!--stv-dropdown style="width:100px;">
+                    <div data-button>T</div>
+                    <ul data-menu>
+                        <li> ECA </li>
+                        <li> ESCC </li>
+                        <li data-divider></li>
+                        <li data-sub> Pathway
+                            <ul>
+                                <li> KEGG </li>
+                                <li> Other </li>
+                                <li data-divider></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </stv-dropdown-->
+
+                <!-- <div class="horizontal layout qual-elem">
+                    <div class="stv-select">
+                        <stv-select name="cancer" id="cancer">
+                            <stv-option value="ESCC" selected>ESCC</stv-option>
+                            <stv-option value="EA">EA</stv-option>
+                            <stv-option value="BRCA">BRCA</stv-option>
+                            <stv-option value="CA">CA</stv-option>
+                        </stv-select>
+                    </div>
+                    &nbsp;&nbsp;
+                    <!--/div-->
+                <!-- </div>
+                <div>
+                    <input id="searchGene" class="stv" type="text" placeholder="Search for a gene or variant or region">
+                </div>
+                <div class="tooltip" on-click="handleSearchButton">
+                    &nbsp;&nbsp;<span class="tooltip">Search</span>
+                </div> -->
+                <div class="flex" style="margin-left:2vw;"></div>
+                <div title="" class="option" on-click="handleMenuOption" login-required data-option="form">
+                    <i class="fa fa-rocket"></i>
+                    <span class="option-text">Run</span>
+                </div>
+                <div title="Browse my data" class="option" on-click="handleMenuPanel" login-required data-panel="fileBrowserPanel">
+                    <i class="fa fa-cloud"></i>
+                    <span class="option-text">My data</span>
+                </div>
+                <div title="Browse my jobs" class="option" on-click="handleMenuPanel" login-required data-panel="jobBrowserPanel">
+                    <i class="fa fa-flask"></i>
+                    <span class="option-text">My jobs</span>
+                </div>
+                <div style="margin-left:2vw;"></div>
+            </div>
+
+            <!-- <stv-launcher class="launcher" dropdown-position="left" data-src="conf/test-apps.json">
+                <i class="fa fa-th"></i>
+            </stv-launcher> -->
+
+            <stv-cluster-status id="clusterStatus" type="dark" class="cluster-status"></stv-cluster-status>
+
+            <stv-dropdown dark class="helpmenu">
+                <div data-button><i class="fa fa-question-circle"></i></div>
+                <ul data-menu>
+                    <a href="" target="_blank">
+                        <li>
+                            <a href="https://github.com/qingtaolei/FudanPGxIDMICG/wiki" target="_blank">
+                                <i class="fa fa-book"></i> &nbsp; Documentation
+                        </li>
+                        </a>
+                        <li>
+                            <a href="https://github.com/qingtaolei/FudanPGxIDMICG/wiki/Tutorial" target="_blank">
+                                <i class="fa fa-lightbulb-o"></i> &nbsp; Tutorial
+                        </li>
+                        <li hidden on-mousedown="handleFeedback">
+                            <i class="fa fa-envelope-o" aria-hidden="true"></i> &nbsp; Send an email
+                        </li>
+                        <!-- <a href="http://gitlab.bioinfo.cipf.es/stevia/stevia-elements/issues" target="_blank">
+                            <li>
+                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i> &nbsp; Source Code
+                            </li>
+                        </a> -->
+                </ul>
+            </stv-dropdown>
+        </stv-header>
+
+        <stv-footer menu-option="home,login,signup,profile,remember">
+            Identification of Driver Mutations in Individual Cancer Genomes
+            <br>
+            <span style="font-weight:bold;">Center for Pharmacogenomics, Fudan University</span>
+            <br>
+            <span style="font-weight:bold;">Computational Genomics Department, Principe Felipe Research Center</span>
+            <br> 2017
+        </stv-footer>
+    </template>
+
+    <script>
+        Polymer({
+            is: "eca-element",
+            behaviors: [StvApplicationBehavior],
+            properties: {
+                allowedTools: {
+                    type: Array,
+                    value: ['eca.somatic-pipeline']
+                    // value: function() {
+                    //     return ['*'];
+                    // }
+                },
+                bioformats: {
+                    type: Array,
+                    notify: true,
+                    value: [BIOFORMATS["ECA_VARIANT"]]
+                },
+                gene: {
+                    type: Object
+                }
+                // cancerTypes: {
+                //     type: Array,
+                //     value: function() {
+                //         return CANCER_TYPES;
+                //     }
+                // },
+                // inputSamples: {
+                //     type: Array
+                // }
+                // cancer{
+                //     type: Object
+                // }
+            },
+            listeners: {
+                'open-job-folder': 'handleOpenJobFolder'
+            },
+            ready: function() {
+                var me = this;
+            },
+            handleOpenJobFolder: function(e) {
+                var job = e.detail;
+                this.$.fileBrowser.set('folder', job.folder);
+                this.$.fileBrowserPanel.show();
+            },
+            annonymousLogin: function () {
+              this.$.stvHeader.anonymousSign();
+            },
+            handleFileSelect: function(e) {},
+            handleJobSelect: function(e) {
+                var me = this;
+                var job = e.detail;
+                if (job && job.status === 'DONE') {
+                    this.set('selectedOption', 'job');
+                    this.$.report.hideJobInformation = true;
+                    this.$.report.set('job', job);
+                }
+            },
+            /*handleJobSelect: function(e) {
+                var job = e.detail;
+                if (job && job.status === 'DONE') {
+                    if (this.$.pathactViewer.jobItem != null) {
+                        if (this.$.pathactViewer.jobItem.id !== job.id) {
+                            this.$.pathactViewer.set('job', job);
+                        }
+                        this.set('selectedOption', 'viewer');
+                    } else {
+                        this.$.pathactViewer.set('jobItem', job);
+                        this.set('selectedOption', 'viewer');
+                    }
+                }
+            },*/
+            handleSearchButton: function(e) {
+                var me = this;
+                //this.set('gene', this.$.searchGene.value);
+                var url = ECA_DB_HOST + '/genesearch.php?gene=' + this.$.searchGene.value;
+                //alert(url);
+                this._doRequest(url, function(response) {
+                    //me.obj = response;
+                    me.set('gene', response);
+                });
+                this.selectedOption = 'gene';
+                //this.$.ecaGene.set('gene', this.$.searchGene.value);
+            },
+            _doRequest: function(url, cb) {
+                var me = this;
+                var request = new XMLHttpRequest();
+                request.onload = function() {
+                    cb(JSON.parse(this.responseText));
+                };
+                request.onerror = function() {
+                    console.log('Error loading remote file');
+                };
+                request.open("GET", url);
+                request.send();
+            },
+            handleLogin: function() {
+                if (Cookies('bioinfo_user').indexOf("anonymous___") != -1) {
+                    this.setMenu('home');
+                } else {
+                    this.setMenu('home');
+                }
+                this.$.home.isLogged = true;
+                this.setMenu('form');
+            },
+            handleLogout: function() {
+                this.$.home.isLogged = false;
+                this.setMenu('home');
+            },
+            handleFeedback: function() {
+                this.$.feedback.hidden = !this.$.feedback.hidden;
+            },
+            _openRemoteFile: function(filepath, cb) {
+                var me = this;
+                var request = new XMLHttpRequest();
+                request.onload = function() {
+                    cb(this.responseText);
+                };
+                request.onerror = function() {
+                    console.log('Error loading remote file');
+                };
+                request.open("GET", filepath);
+                request.send();
+            }
+        });
+    </script>
+</dom-module>

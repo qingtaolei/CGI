@@ -1,0 +1,163 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<dom-module id="eca-home">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning"></style>
+    <style>
+         :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            font-size: 22px;
+            font-weight: 300;
+            padding-top: 2vh;
+            color: var(--text-primary-color);
+        }
+
+        #main {
+            margin: 0px auto 0px auto;
+            max-width: 785px;
+            padding: 2vh;
+        }
+
+        #image {
+            width: 300px;
+            margin: 10px;
+        }
+
+        #button {
+            font-weight: 400;
+            height: auto;
+            margin: 20px;
+            padding: 20px 30px;
+            font-size: 26px;
+            border-radius: 5px;
+            background-color: var(--dark-button-color);
+        }
+
+        #button:hover {
+            background-color: var(--light-button-color);
+        }
+
+        .application {
+            font-size: 80px;
+            text-shadow: 3px 3px 5px var(--dark-primary-color);
+        }
+
+        .description {
+            font-size: 25px;
+            line-height: 40px;
+            width: 800px;
+            padding-top: 30px;
+            padding-bottom: 10px;
+            text-align: center;
+            color: var(--accent-color);
+        }
+
+        @media (max-width: 1100px) {
+            #image {
+                width: 230px;
+            }
+        }
+
+        @media (max-width: 800px) {
+            #image {
+                width: 150px;
+            }
+            .megatitle {
+                font-size: 50px;
+            }
+        }
+
+        .paragraph {
+            text-align: justify;
+            padding: 10px 0;
+        }
+
+        .paragraph2 {
+            font-size: 14px;
+            padding: 0 0 10px 0;
+        }
+
+        .title {
+            font-size: 40px;
+            padding-top: 30px;
+            padding-bottom: 10px;
+        }
+
+        .title2 {
+            padding-top: 20px;
+            padding-bottom: 10px;
+        }
+
+        .b {
+            font-weight: 400;
+        }
+
+        a,
+        a:visited {
+            text-decoration: none;
+            color: var(--accent-color);
+        }
+    </style>
+    <template>
+      <div id="main">
+                <div class="container vertical layout center-justified center">
+                    <div>
+                        <img id="image" src="../images/icon.svg">
+                    </div>
+                    <div class="vertical layout center" style="width:465px;">
+                        <!-- <div class="application">
+                             <span style="font-weight:normal;">IDMICG</span>
+                        </div> -->
+                        <div class="description">
+                          IDMICG (Identification of Driver Mutations in Individual Cancer Genomes) is a web tool for somatic mutation interpretation and visulization of individual cancer genomes based on large-scale cancer genome sequencing data and computational prediction.
+                        </div>
+                        <br>
+                        <!-- <div id="button" class="stv-btn stv-btn-shdw" on-click="handleStart" hidden$="{{isLogged}}">
+                            <i class="fa fa-paper-plane"></i> &nbsp; Start
+                        </div> -->
+                   <div id="button" class="stv-btn stv-btn-shdw" on-click="handleStart">
+                   <i class="fa fa-paper-plane"></i>Start
+                   </div>
+
+                    </div>
+                </div>
+
+
+                <!-- <div class="title">Overview:</div> -->
+                <!-- <div class="paragraph">
+Esophageal cancer (or oesophageal cancer) is cancer arising from the esophagus—the food pipe that runs between the throat and the stomach. It arises as a result of the acquisition of a series of fixed DNA sequence abnormalities, mutations, many of which ultimately confer a growth advantage upon the cells in which they have occurred. There is a vast amount of information available in the published scientific literature about these changes. ECGVD is designed to store and display somatic mutation information and related details and contains information relating to Esophageal cancer.
+                </div> -->
+                <!-- <div class="title2">Supported by</div>
+                            <div class="paragraph">
+                                <img style="margin:3px;height:50px;" src="../images/fudan-log.svg"/>
+                                <img style="margin:3px;height:50px;" src="../images/lifescience-log.svg"/>
+                                <img style="margin:3px;height:50px;" src="../images/logo_cipf.png"/>
+                                <img style="margin:3px;height:50px;" src="../images/logoBabelomics_negative_noFondo.svg"/>
+                            </div> -->
+                <div class="title2"></div>
+                <div class="paragraph2">
+                </div>
+            </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'eca-home',
+            properties: {
+                 isLogged: {
+                     type: Boolean,
+                     value: false
+                 }
+             },
+             handleStart: function() {
+                 this.fire('start');
+             }
+            //  annonymousLogin: function() {
+            //      //debugger
+            //      this.clean();
+            //      this.fire('annonymous');
+            //  }
+        })
+    </script>
+</dom-module>

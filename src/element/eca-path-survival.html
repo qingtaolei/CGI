@@ -1,0 +1,113 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<dom-module id="eca-path-survival">
+    <style is="custom-style"
+           include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            width: 100%;
+        }
+
+        stv-table {
+            box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
+            overflow-y: hidden;
+        }
+
+        stv-table::shadow #list {
+            min-height: 200px;
+        }
+
+        stv-table::shadow {
+            font-size: 11px;
+        }
+
+        stv-table::shadow .table-row {
+            height: 25px;
+        }
+
+        stv-table::shadow .table-header-field > .name.stv-table {
+            padding: 4px 0;
+        }
+
+        #mafChart {
+            border: 1px solid rgba(125, 125, 125, 0.4);
+            box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
+            margin: 0 auto;
+            overflow-x: auto;
+            height: 350px;
+        }
+
+    </style>
+    <template>
+        <!-- <div hidden$="{{isEmpty}}" class="horizontal layout wrap center-justified">
+            <!--stv-table id="table" enable-export enable-paging></stv-table-->
+            <!--div id="mafChart" hidden></div-->
+        <div class="horizontal layout">
+            <div hidden$="{{isEmpty}}" style="padding:120px 150px;">
+                <img src="{{survivalcurve}}">
+            </div>
+            <div id="legend" hidden$="{{isEmpty}}">
+                    <i class="fa fa-lightbulb-o" aria-hidden="true" style="font-size:16px;color:#32b0cd"></i>
+                    <br>- Significantly enriched pathway analysis was performed for each patients with public somatic mutation data.
+                    <br>- Patients in public dataset were divided into two groups according to the statu of enriched pathway (fisher exact p value < 0.05).
+                    <br>- The difference of overall survival between the two groups was estimated using log-rank test.
+            </div>
+            <div hidden$="{{!isEmpty}}" style="padding:20px 50px;">
+                No survival information found.
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: 'eca-path-survival',
+        properties: {
+            row: {
+                type: Object,
+                observer: 'rowChanged'
+            },
+            isEmpty: {
+                value: false,
+                type: Boolean
+            }
+            // },
+            // pathwayid: {
+            //     type: Object,
+            //     reflectToAttribute: true,
+            //     value: ''
+            // }
+        },
+        ready: function () {
+        },
+        rowChanged: function (neo, old) {
+            var me = this;
+            if (neo) {
+                 var pathwaysurvival = IDMICG_HOST + "/CGD/pathwaysurvival/" +this.cancer +"/"+this.cancer+"." + this.row.pathwayid + ".pathwaysurvival.png";
+                // console.log(pathwaysurvival)
+                 var x = this._imageExists(pathwaysurvival, function(exists) {
+                   if(exists){
+                     me.set("survivalcurve",pathwaysurvival);
+                     me.isEmpty = false;
+                   }else{
+                     me.isEmpty = true;
+                   }
+              })
+            }
+        },
+        _imageExists: function(url, cb) {
+            var request = new XMLHttpRequest();
+            request.onload = function() {
+              if(request.status == 200){
+                cb(true);
+              }else{
+                cb(false);
+              }
+            };
+            request.onerror = function() {
+                cb(false);
+            };
+            request.open("GET", url);
+            request.send();
+        }
+    });
+</script>

@@ -1,0 +1,479 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="eca-main-content.html">
+
+<dom-module id="eca-escc-main">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning"></style>
+    <style>
+         :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            font-size: 22px;
+            color: var(--text-primary-color);
+            padding:20px;
+        }
+    </style>
+    <template>
+      <!--{template header}-->
+      		<div id="page-wrapper">
+      			<div class="main-page">
+      				<div class="four-grids">
+      					<div class="col-md-3 four-grid">
+      						<div class="four-grid1">
+      							<div class="icon">
+      								<i class="glyphicon glyphicon-user" aria-hidden="true"></i>
+      							</div>
+      							<div class="four-text">
+      								<h3>Patients</h3>
+      								<h4> {{obj.patients}}</h4>
+      								<p> <span class="inlinebar">1,3,4,5,3,5</span> </p>
+      							</div>
+      							<a href="#" data-toggle="modal" data-target="#myModal1"></a>
+      						</div>
+      					</div>
+      					<div class="col-md-3 four-grid">
+      						<div class="four-grid2">
+      							<div class="icon">
+      								<i class="glyphicon glyphicon-align-justify " aria-hidden="true"></i>
+      							</div>
+      							<div class="four-text">
+      								<h3>Somatic Variants</h3>
+      								<h4>{{obj.variants}}</h4>
+      								<p><span class="dynamicbar">Loading..</span></p>
+      							</div>
+      							<a href="#" data-toggle="modal" data-target="#myModal1"></a>
+      						</div>
+      					</div>
+      					<div class="col-md-3 four-grid">
+      						<div class="four-grid3">
+      							<div class="icon">
+      								<i class="glyphicon glyphicon-align-justify" aria-hidden="true"></i>
+      							</div>
+      							<div class="four-text">
+      								<h3>Genes</h3>
+      								<h4>{{obj.genes}}</h4>
+      								<p> <span class="inlinebar">1,3,4,5,3,5</span> </p>
+      							</div>
+      							<a href="#" data-toggle="modal" data-target="#myModal1"></a>
+      						</div>
+      					</div>
+      					<div class="col-md-3 four-grid">
+      						<div class="four-grid4">
+      							<div class="icon">
+      								<i class="glyphicon glyphicon-align-justify" aria-hidden="true"></i>
+      							</div>
+      							<div class="four-text">
+      								<h3>Drugs</h3>
+      								<!--h4>{$numberofdrugs}</h4-->
+      								<h4>{{obj.drug}}</h4>
+      								<p><span class="dynamicbar">Loading..</span></p>
+      							</div>
+      							<a href="#" data-toggle="modal" data-target="#myModal1"></a>
+      						</div>
+      					</div>
+      					<div class="clearfix"></div>
+      				</div><!--div class="four-grids"-->
+
+      				<script src="js/amcharts.js" type="text/javascript"></script>
+      				<script src="js/serial.js" type="text/javascript"></script>
+      				<script src="js/amstock.js" type="text/javascript"></script>
+      				<script>
+      					AmCharts.ready(function () {
+      						generateChartData();
+      						createStockChart();
+      					});
+
+      					var chart;
+      					var chartData = [];
+      					var newPanel;
+      					var stockPanel;
+
+      					function generateChartData() {
+      						var firstDate = new Date();
+      						firstDate.setHours(0, 0, 0, 0);
+      						firstDate.setDate(firstDate.getDate() - 2000);
+
+      						for (var i = 0; i < 2000; i++) {
+      							var newDate = new Date(firstDate);
+
+      							newDate.setDate(newDate.getDate() + i);
+
+      							var open = Math.round(Math.random() * (30) + 100);
+      							var close = open + Math.round(Math.random() * (15) - Math.random() * 10);
+
+      							var low;
+      							if (open < close) {
+      								low = open - Math.round(Math.random() * 5);
+      							} else {
+      								low = close - Math.round(Math.random() * 5);
+      							}
+
+      							var high;
+      							if (open < close) {
+      								high = close + Math.round(Math.random() * 5);
+      							} else {
+      								high = open + Math.round(Math.random() * 5);
+      							}
+
+      							var volume = Math.round(Math.random() * (1000 + i)) + 100 + i;
+
+
+      							chartData[i] = ({
+      								date: newDate,
+      								open: open,
+      								close: close,
+      								high: high,
+      								low: low,
+      								volume: volume
+      							});
+      						}
+      					}
+
+      					function createStockChart() {
+      						chart = new AmCharts.AmStockChart();
+
+      						chart.balloon.horizontalPadding = 13;
+
+      						// DATASET //////////////////////////////////////////
+      						var dataSet = new AmCharts.DataSet();
+      						dataSet.fieldMappings = [{
+      							fromField: "open",
+      							toField: "open"
+      						}, {
+      							fromField: "close",
+      							toField: "close"
+      						}, {
+      							fromField: "high",
+      							toField: "high"
+      						}, {
+      							fromField: "low",
+      							toField: "low"
+      						}, {
+      							fromField: "volume",
+      							toField: "volume"
+      						}, {
+      							fromField: "value",
+      							toField: "value"
+      						}];
+      						dataSet.color = "#7f8da9";
+      						dataSet.dataProvider = chartData;
+      						dataSet.categoryField = "date";
+
+      						chart.dataSets = [dataSet];
+
+      						// PANELS ///////////////////////////////////////////
+      						stockPanel = new AmCharts.StockPanel();
+      						stockPanel.title = "Value";
+
+      						// graph of first stock panel
+      						var graph = new AmCharts.StockGraph();
+      						graph.type = "candlestick";
+      						graph.openField = "open";
+      						graph.closeField = "close";
+      						graph.highField = "high";
+      						graph.lowField = "low";
+      						graph.valueField = "close";
+      						graph.lineColor = "#f7aa47";
+      						graph.fillColors = "#f7aa47";
+      						graph.negativeLineColor = "#68b828";
+      						graph.negativeFillColors = "#68b828";
+      						graph.fillAlphas = 1;
+      						graph.balloonText = "open:<b>[[open]]</b><br>close:<b>[[close]]</b><br>low:<b>[[low]]</b><br>high:<b>[[high]]</b>";
+      						graph.useDataSetColors = false;
+      						stockPanel.addStockGraph(graph);
+
+      						var stockLegend = new AmCharts.StockLegend();
+      						stockLegend.markerType = "none";
+      						stockLegend.markerSize = 0;
+      						stockLegend.valueTextRegular = undefined;
+      						stockLegend.valueWidth = 250;
+      						stockPanel.stockLegend = stockLegend;
+
+      						chart.panels = [stockPanel];
+
+
+      						// OTHER SETTINGS ////////////////////////////////////
+      						var sbsettings = new AmCharts.ChartScrollbarSettings();
+      						sbsettings.graph = graph;
+      						sbsettings.graphType = "line";
+      						sbsettings.usePeriod = "WW";
+      						chart.chartScrollbarSettings = sbsettings;
+
+      						// Enable pan events
+      						var panelsSettings = new AmCharts.PanelsSettings();
+      						panelsSettings.panEventsEnabled = true;
+      						chart.panelsSettings = panelsSettings;
+
+      						// CURSOR
+      						var cursorSettings = new AmCharts.ChartCursorSettings();
+      						cursorSettings.valueBalloonsEnabled = true;
+      						cursorSettings.fullWidth = true;
+      						cursorSettings.cursorAlpha = 0.1;
+      						chart.chartCursorSettings = cursorSettings;
+
+      						// PERIOD SELECTOR ///////////////////////////////////
+      						var periodSelector = new AmCharts.PeriodSelector();
+      						periodSelector.position = "bottom";
+      						periodSelector.periods = [{
+      							period: "DD",
+      							count: 10,
+      							label: "10 days"
+      						}, {
+      							period: "MM",
+      							selected: true,
+      							count: 1,
+      							label: "1 month"
+      						}, {
+      							period: "YYYY",
+      							count: 1,
+      							label: "1 year"
+      						}, {
+      							period: "YTD",
+      							label: "YTD"
+      						}, {
+      							period: "MAX",
+      							label: "MAX"
+      						}];
+      						chart.periodSelector = periodSelector;
+
+
+      						chart.write('chartdiv');
+      					}
+
+
+
+      					function addPanel() {
+      						newPanel = new AmCharts.StockPanel();
+      						newPanel.allowTurningOff = true;
+      						newPanel.title = "Volume";
+      						newPanel.showCategoryAxis = false;
+
+      						var graph = new AmCharts.StockGraph();
+      						graph.valueField = "volume";
+      						graph.fillAlphas = 0.15;
+      						newPanel.addStockGraph(graph);
+
+      						var legend = new AmCharts.StockLegend();
+      						legend.markerType = "none";
+      						legend.markerSize = 0;
+      						newPanel.stockLegend = legend;
+
+      						chart.addPanelAt(newPanel, 1);
+      						chart.validateNow();
+
+      						document.getElementById("addPanelButton").disabled = true;
+      						document.getElementById("removePanelButton").disabled = false;
+      					}
+
+      					function removePanel() {
+      						chart.removePanel(newPanel);
+      						chart.validateNow();
+
+      						document.getElementById("addPanelButton").disabled = false;
+      						document.getElementById("removePanelButton").disabled = true;
+      					}
+
+      				</script>
+
+      				<div class="blank-page">
+      					<h2>About ECGVD</h2>
+      					<p><strong>Esophageal cancer (or oesophageal cancer) is cancer arising from the esophagus—the food pipe that runs between the throat and the stomach. It arises as a result of the acquisition of a series of fixed DNA sequence abnormalities, mutations, many of which ultimately confer a growth advantage upon the cells in which they have occurred. There is a vast amount of information available in the published scientific literature about these changes. ECGVD is designed to store and display somatic mutation information and related details and contains information relating to Esophageal cancer.<strong></p>
+      				</div>
+      		<!--统计饼图-->
+      				<div class="piechat-section">
+      					<div class="col-md-4 pie-chat">
+      						<div class="content-top-1">
+      							<div class="col-md-6 top-content">
+      								<h5>ESCC</h5>
+      								<label>{$numberofescc}</label>
+      							</div>
+      							<div class="col-md-6 top-content1">
+      								<div id="demo-pie-1" class="pie-title-center" data-percent="{$esccratio}"> <span class="pie-value"></span> </div>
+      							</div>
+      							<div class="clearfix"> </div>
+      						</div>
+      					</div>
+      					<div class="col-md-4 pie-chat">
+      						<div class="content-top-1">
+      							<div class="col-md-6 top-content">
+      								<h5>SNP</h5>
+      								<label>$numberofsnp</label>
+      							</div>
+      							<div class="col-md-6 top-content1">
+      								<div id="demo-pie-2" class="pie-title-center" data-percent="{$ratiosnpvsindel}"> <span class="pie-value"></span> </div>
+      							</div>
+      							<div class="clearfix"> </div>
+      						</div>
+      					</div>
+      					<div class="col-md-4 pie-chat">
+      						<div class="content-top-1">
+      							<div class="col-md-6 top-content">
+      								<h5>Gene in Cosmic</h5>
+      								<label>215</label>
+      							</div>
+      							<div class="col-md-6 top-content1">
+      								<div id="demo-pie-3" class="pie-title-center" data-percent="{$incosmicratio}"> <span class="pie-value"></span> </div>
+      							</div>
+      							<div class="clearfix"> </div>
+      						</div>
+      					</div>
+      					<div class="clearfix"></div>
+      				</div><!--div class="piechat-section"-->
+      				<script>
+      					 var icons = new Skycons({"color": "#68b828"}),
+      						  list  = [
+      							"clear-day"
+      						  ],
+      						  i;
+
+      					  for(i = list.length; i--; )
+      						icons.set(list[i], list[i]);
+
+      					  icons.play();
+      				</script>
+      				<script>
+      					 var icons = new Skycons({"color": "#f7aa47"}),
+      						  list  = [
+      							"clear-night", "partly-cloudy-day",
+      							"partly-cloudy-night", "cloudy", "rain", "sleet", "snow", "wind",
+      							"fog"
+      						  ],
+      						  i;
+
+      					  for(i = list.length; i--; )
+      						icons.set(list[i], list[i]);
+
+      					  icons.play();
+      				</script>
+      				<div class="photoday-section">
+      						<div class="chat-grids">
+      					<div class="col-md-6 chat-grid">
+      					<div class="grid-1">
+      									<h3>Bar</h3>
+      									<canvas id="bar1" height="250" width="700" style="width: 500px; height: 300px;"></canvas>
+      									<script>
+      										var barChartData = {
+      											labels : ["Mon","Tue","Wed","Thu","Fri","Sat","Mon","Tue","Wed","Thu"],
+      											datasets : [
+      												{
+      													fillColor : "#7c38bc",
+      													strokeColor : "#7c38bc",
+      													data : [25,40,50,65,55,30,20,10,6,4]
+      												},
+      												{
+      													fillColor : "#7c38bc",
+      													strokeColor : "#7c38bc",
+      													data : [30,45,55,70,40,25,15,8,5,2]
+      												}
+      											]
+
+      										};
+      											new Chart(document.getElementById("bar1").getContext("2d")).Bar(barChartData);
+      									</script>
+      								</div>
+      					</div>
+      					<div class="col-md-6 chat-grid1">
+      						<div class="grid-1">
+      								<h3>Line</h3>
+      								<canvas id="line1" height="300" width="700" style="width: 500px; height: 300px;"></canvas>
+      								<script>
+      										var lineChartData = {
+      											labels : ["Mon","Tue","Wed","Thu","Fri","Sat","Mon"],
+      											datasets : [
+      												{
+      													fillColor : "#fff",
+      													strokeColor : "#0e62c7",
+      													pointColor : "#0e62c7",
+      													pointStrokeColor : "#0e62c7",
+      													data : [20,35,45,30,10,65,40]
+      												}
+      											]
+
+      										};
+      										new Chart(document.getElementById("line1").getContext("2d")).Line(lineChartData);
+      								</script>
+      							</div>
+      					</div>
+      					</div>
+      				<div class="clearfix"></div>
+      				</div><!--div class="photoday-section"-->
+      			</div><!--div class="main-page"-->
+      		</div><!--div id="page-wrapper"-->
+      <!--{template footer}-->
+
+    <!--  Hello
+
+      <input class='stv'>
+
+
+      <div>{{obj.a}}</div>
+      <div>{{obj.b}}</div>
+      <div>{{obj.c}}</div>
+      <div>{{obj.d}}</div>
+
+      <br>
+      <div class="horizontal layout">
+          <template is="dom-repeat" items="{{arr}}">
+            <div>{{item}}</div-->
+
+          </template>
+      </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'eca-escc-main',
+            properties: {
+                isLogged: {
+                    type: Boolean,
+                    value: false
+                },
+                arr:{
+                  type:Array,
+                  value:[1,2,3,4]
+                },
+                obj:{
+                  type:Object
+                },
+            },
+            ready:function (){
+              var me = this;
+              /*
+              var n = 1;
+              var s = 'hello';
+              var a = [1,2,'asdf',[]];
+              var o = {'ke y1':1};
+              o['ke y1']
+              a[0]
+              a['0']
+
+              var f = function (p1){
+                console.log(p1)
+              };
+              */
+
+              this._doRequest(ECA_DB_HOST+'/home.php', function(response){
+                //me.obj = response;
+                 me.set('obj', response)
+              });
+            },
+            handleStart: function() {
+                this.fire('start');
+            },
+            _doRequest: function(url, cb) {
+                var me = this;
+                var request = new XMLHttpRequest();
+                request.onload = function() {
+                    cb(JSON.parse(this.responseText));
+                };
+                request.onerror = function() {
+                    console.log('Error loading remote file');
+                };
+                request.open("GET", url);
+                request.send();
+            },
+
+        })
+    </script>
+</dom-module>

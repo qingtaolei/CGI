@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=0.6">
+        <title>IDMICG</title>
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+        <!-- Chrome for Android theme color -->
+        <!--<meta name="theme-color" content="#303F9F">-->
+        <meta name="theme-color" content="#000000">
+
+        <!-- Web Application Manifest -->
+        <!-- <link rel="manifest" href="manifest.json"> -->
+
+        <!-- Windows Theme color -->
+        <meta name="msapplication-TileColor" content="#3372DF">
+
+        <!-- Add to homescreen for Chrome on Android -->
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="application-name" content="application">
+
+        <!-- Add to homescreen for Safari on iOS -->
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-title" content="application">
+
+        <!-- Force Microsoft use latest web tech -->
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+        <!-- END meta -->
+
+        <!--Config-->
+        <script src="conf/config.js"></script>
+        <script src="conf/bioformats.js"></script>
+
+        <!--Fonts-->
+        <link href='bower_components/stevia-elements/fonts/fonts.css' rel='stylesheet' type='text/css'>
+        <link href='bower_components/fontawesome/css/font-awesome.min.css' rel='stylesheet' type='text/css'>
+
+        <!--CSS-->
+        <link href='bower_components/stevia-elements/css/global.css' rel='stylesheet' type='text/css'>
+        <link href='bower_components/stevia-elements/css/form.css' rel='stylesheet' type='text/css'>
+        <link href='bower_components/stevia-elements/css/context.css' rel='stylesheet' type='text/css'>
+
+
+        <!--GV
+        <script src="bower_components/underscore/underscore-min.js"></script>
+        <script src="bower_components/backbone/backbone.js"></script>
+        <script src="bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="bower_components/qtip2/jquery.qtip.min.js"></script>
+        <link rel="stylesheet" href="bower_components/qtip2/jquery.qtip.min.css">
+        <script src="bower_components/uri.js/src/URI.min.js"></script>
+	--> 
+
+        <!--Web Components-->
+        <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+
+        <link rel="import" href="eca-element.html">
+
+        <link rel="import" href="conf/theme.html">
+
+    </head>
+
+    <body unresolved class="fullbleed">
+        <!-- <eca-element version="0.0.1"></eca-element> -->
+        <script>
+            window.addEventListener('WebComponentsReady', function(e) {
+	            eca = document.createElement('eca-element');
+                    eca.setAttribute('version', '0.0.1')
+                    document.body.appendChild(eca);
+            });
+        </script>
+    </body>
+
+</html>
